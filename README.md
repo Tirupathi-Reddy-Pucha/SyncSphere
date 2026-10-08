@@ -12,12 +12,43 @@
 ## 🏗️ Cloud System Architecture
 
 ```mermaid
-graph TD
-    User[Client Browser / React 18 SPA] -->|HTTPS / REST API| ExpressGateway[Express API Gateway - Node.js 18/20 LTS]
-    ExpressGateway -->|@azure/storage-blob SDK| AzureBlob[Azure Blob Storage: stsyncsphere2026 / workspace-assets]
-    ExpressGateway -->|Audit Trail & State| StateStore[In-Memory Microservice State Store]
-    ExpressGateway -->|AI Scan Engine| AIScanner[Azure AI Security Heuristic Scanner]
-    ExpressGateway -->|Telemetry Stream| AppInsights[Application Insights & Log Analytics]
+graph TB
+    subgraph Client_Layer["🖥️ Client Layer"]
+        UI["React 18 SPA (Vite / Glassmorphism UI)<br/>Workspace Explorer | Asset Manager | Security Scanner | Telemetry Dashboard"]
+    end
+
+    subgraph Compute_Layer["⚡ Azure Compute Layer (Region: eastasia)"]
+        WebApp["Azure App Service (Plan: plan-syncsphere - F1 Free)<br/>Web App: app-syncsphere-api-2026 (Node.js 18/20 LTS)"]
+        Express["Express.js API Gateway"]
+        UI -->|HTTPS / REST API| Express
+        Express --> WebApp
+    end
+
+    subgraph Storage_Layer["🗄️ Azure Storage Layer (Region: eastus2)"]
+        BlobSDK["@azure/storage-blob SDK"]
+        StorageAcc["Azure Storage Account: stsyncsphere2026"]
+        Container["Blob Container: workspace-assets"]
+        
+        Express -->|Streaming Upload / Container Listing| BlobSDK
+        BlobSDK --> StorageAcc
+        StorageAcc --> Container
+    end
+
+    subgraph Microservices_Layer["🛡️ Security & Microservices Layer"]
+        AIScanner["Azure AI Security Code Scanner"]
+        StateStore["Workspace, Task & Audit State Store"]
+        
+        Express --> AIScanner
+        Express --> StateStore
+    end
+
+    subgraph Observability_Layer["📊 Azure Observability & Telemetry (Region: eastus2)"]
+        AppInsights["Application Insights: appi-syncsphere"]
+        LogAnalytics["Log Analytics Workspace: log-syncsphere"]
+        
+        Express -->|Telemetry & APM| AppInsights
+        AppInsights --> LogAnalytics
+    end
 ```
 
 ---
