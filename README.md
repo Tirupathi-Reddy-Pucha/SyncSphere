@@ -5,7 +5,7 @@
 [![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
-> **SyncSphere** is a resume-worthy, multi-tenant cloud collaboration workspace engineered for cloud computing teams. Built on **Microsoft Azure**, it integrates real-time workspace task tracking, serverless Azure Blob Storage asset management, automated AI cloud security code scanning, and live infrastructure telemetry monitoring.
+> **SyncSphere** is a multi-tenant cloud collaboration workspace engineered for cloud computing teams. Built on **Microsoft Azure**, it integrates real-time workspace task tracking, serverless Azure Blob Storage asset management, automated AI cloud security code scanning, and live infrastructure telemetry monitoring.
 
 ---
 
