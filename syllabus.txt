@@ -1,0 +1,169 @@
+=== Page 1 ===
+23CSE363                                                           CLOUD COMPUTING                                                       L-T-P-C: 3-0-0-3     
+                                                                         
+Pre-Requisite(s): 23CSEXXX Computer Networks   
+   
+Course Objectives   
+    
+• This course helps students to acquire a solid understanding of cloud computing fundamentals, including service 
+and deployment models, to make informed decisions when selecting and implementing cloud-based solutions for various 
+projects and scenarios.    
+• Learn and apply modern cloud -native application development techniques, such as microservices, 
+containerization, and container orchestration, to build scalable, resilient, and efficient applications that leverage the full 
+potential of cloud environments.    
+• Develop practical skills in managing and monitoring cloud deployments, focusing on orchestration, automation, 
+and resource management, enabling students to optimize and maintain cloud-based solutions for improved performance, 
+cost-effectiveness, and overall operational efficiency.   
+    
+Course Outcomes    
+   
+CO1: Understanding of core cloud computing concepts, service models, and deployment models, along with the            ability to 
+identify the benefits and challenges associated with cloud computing.   
+CO2: Proficiency in utilizing cloud infrastructure and services with the ability to design and manage cloud            resources 
+effectively.   
+CO3: Ability to develop and deploy cloud applications by incorporating knowledge of compute, storage, and            networking 
+services.   
+CO4: Competence in cloud-native application development, including the design and implementation of             microservices, 
+containerization with Docker, and container orchestration.   
+CO5: Proficiency in managing and monitoring cloud environments, encompassing cloud orchestration, automation,            and 
+resource management techniques.   
+    
+CO-PO Mapping   
+    
+ PO/PSO   
+PO1   PO2   PO3   PO4   PO5   PO6   PO7   PO8   PO9   PO10   PO11   PO12   PSO1   PSO2   
+CO   
+CO1   3       2   1   3                               2   2   
+CO2   3   3   3   2   3               2               3   3   
+CO3   3   3   3   2   3               2               3   3   
+CO4   3   3   3   2   2               2               3   3   
+CO5   3   3   2   2   3               2               3   3   
+    
+Syllabus   
+    
+Unit-1   
+Introduction to Cloud Computing - Definition and evolution of cloud computing - Cloud computing service models: IaaS, PaaS, 
+SaaS - Cloud deployment models: Public, Private, Hybrid, and Community Clouds - Benefits and challenges of cloud computing. 
+Cloud Infrastructure and Services - Cloud computing architecture - Virtualization concepts - Storage solutions - Cloud networking 
+and security.    
+    
+Unit-2   
+Infrastructure as a Service (IaaS) - IaaS concepts and components - Compute services - Storage services -  Networking services -  
+Security and identity services. Platform as a Service (PaaS) - PaaS concepts and components - Application development platforms 
+- Data management services - Middleware services - Integration and deployment services. Software as a Service (SaaS) - SaaS 
+concepts and components - SaaS application examples - SaaS development and delivery.   
+    
+=== Page 2 ===
+Unit-3   
+Cloud Management and Monitoring - Cloud orchestration and automation - Cloud resource management. Cloud-Native Application 
+Development - Microservices architecture - Monolithic vs. microservices architecture - Designing and implementing microservices.  
+Containerization - Docker: container images, registries, and runtimes - Containerizing applications and managing dependencies - 
+Multi-container applications and Docker Compose. Container Orchestration – Overview of platforms - Kubernetes: architecture, 
+components, and concepts - Deploying and managing applications in Kubernetes - Service discovery, scaling, and rolling updates - 
+Alternative orchestration platforms: Docker Swarm.   
+    
+Textbook(s)     
+Thomas Erl, Zaigham Mahmood, and Ricardo Puttini, “Cloud Computing: Concepts, Technology & Architecture”, Prentice Hall, 
+2013.   
+ Tom Laszewski, Kamal Arora, Piyum Zonooz, and Erik Farr, “Cloud Native Architectures: Design high-availability and 
+costeffective applications for the cloud”, Packt Publishing, 2018.   
+    
+Reference(s)   
+Toby Velte, Anthony Velte, and Robert Elsenpeter, “Cloud Computing: A Practical Approach”, McGraw-Hill Education, 2009.  
+Michael J. Kavis, “Architecting the Cloud: Design Decisions for Cloud Computing Service Models (SaaS, PaaS, and IaaS)”, 
+Wiley, 2014.   
+    
+      
+Evaluation Pattern: 70:30   
+Assessment   Internal   End Semester    
+Midterm    20       
+Continuous Assessment Theory 
+(*CA T)   
+10       
+Continuous Assessment Lab 
+(*CAL)   
+40       
+**End Semester       30 (50 Marks;   
+2 hours exam)   
+   
+   
+*CA T – Can be Quizzes, Assignments, and Reports   
+*CAL – Can be Lab Assessments, Project, and Report   
+**End Semester can be theory examination/ lab-based examination/ project presentation   
+   
+   
+  
+  
+  
+  
+  
+  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+  
+=== Page 3 ===
+GENERAL INFORMATION  ABBREVIATIONS 
+USED IN THE CURRICULUM   
+L - Lecture   
+T - Tutorial   
+P - Practical   
+C - Credits   
+ENGG - Engineering Sciences (including General, Core and Electives)   
+HUM - Humanities (including Languages and others)   
+PRJ - Project Work (including Seminars)   
+CSE - Computer Science and Engineering   
+Course Outcome (CO) – Statements that describe what students are expected to know, and are able to do at the end of each 
+course. These relate to the skills, knowledge and behaviour that students acquire in their progress through the course.   
+Program Outcomes (POs) – Program Outcomes are statements that describe what students are expected to know and be able 
+to do upon graduating from the Program. These relate to the skills, knowledge, attitude and behaviour that students acquire 
+through the program. NBA has defined the Program Outcomes for each discipline.  
+PROGRAM OUTCOMES FOR ENGINEERING:  
+  
+1. Engineering knowledge: Apply the knowledge of mathematics, science, engineering fundamentals, and an engineering 
+specialization to the solution of complex engineering problems.    
+2. Problem analysis: Identify, formulate, review research literature, and analyze complex engineering problems reaching 
+substantiated conclusions using first principles of mathematics, natural sciences, and engineering sciences.    
+3. Design/development of solutions: Design solutions for complex engineering problems and design system components or 
+processes that meet the specified needs with appropriate consideration for the public health and safety, and the cultural, societal, 
+and environmental considerations.    
+4. Conduct investigations of complex problems: Use research-based knowledge and research methods including design of 
+experiments, analysis and interpretation of data, and synthesis of the information to provide valid conclusions.    
+5. Modern tool usage: Create, select, and apply appropriate techniques, resources, and modern engineering and IT tools 
+including prediction and modelling to complex engineering activities with an understanding of the limitations.    
+6. The engineer and society: Apply reasoning informed by the contextual knowledge to assess societal, health, safety, legal 
+and cultural issues and the consequent responsibilities relevant to the professional engineering practice.    
+7. Environment and sustainability: Understand the impact of the professional engineering solutions in societal and 
+environmental contexts, and demonstrate the knowledge of, and need for sustainable development.    
+8. Ethics: Apply ethical principles and commit to professional ethics and responsibilities and norms of the engineering practice.    
+9. Individual and team work: Function effectively as an individual, and as a member or leader in diverse teams, and in 
+multidisciplinary settings.    
+10. Communication: Communicate effectively on complex engineering activities with the engineering community and with 
+society at large, such as, being able to comprehend and write effective reports and design documentation, make effective 
+presentations, and give and receive clear instructions.    
+11. Project management and finance: Demonstrate knowledge and understanding of the engineering and management 
+principles and apply these to one’s own work, as a member and leader in a team, to manage projects and in multidisciplinary 
+environments.    
+12. Life-long learning: Recognize the need for, and have the preparation and ability to engage in independent and life-long 
+learning in the broadest context of technological change.     
+PROGRAM EDUCATIONAL OBJECTIVES (PEO):   
+• Graduate will strive on a global platform to pursue their professional career in Computer Science and Engineering.   
+• Graduate will contribute to product development as entrepreneurs in inter-disciplinary fields of engineering and technology.   
+• Graduate will demonstrate high regard for professionalism, integrity and respect values in diverse culture, and have a concern 
+for society and environment.   
+PROGRAM SPECIFIC OUTCOMES (PSO):   
+• Ability to design and implement innovative, optimal and elegant computing solutions to interdisciplinary problems using 
+standard practices, tools and technologies.   
+• Ability to learn emerging computing paradigms for research and innovation   
+   
+   
+  

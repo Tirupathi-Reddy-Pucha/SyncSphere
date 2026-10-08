@@ -1,0 +1,19 @@
+{
+    "name": "syncsphere-backend-api",
+    "version": "1.0.0",
+    "description": "Cloud Computing Project - SyncSphere Real-Time Workspace Backend API with Azure Storage & AI Services",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "node --watch src/index.js"
+    },
+    "dependencies": {
+        "@azure/storage-blob": "^12.17.0",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2",
+        "jsonwebtoken": "^9.0.2",
+        "multer": "^1.4.5-lts.1",
+        "uuid": "^9.0.1"
+    }
+}

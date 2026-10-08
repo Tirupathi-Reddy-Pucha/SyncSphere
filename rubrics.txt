@@ -1,0 +1,43 @@
+=== Page 1 ===
+S.No. Evaluation Criteria Marks What to Evaluate 
+1 Project Objective & 
+Requirements 2 Clear problem statement, objectives, requirements, 
+and relevance of the project 
+2 System Architecture & 
+Design 4 
+Appropriate technology/service selection, 
+architecture design, scalability, reliability, and 
+logical implementation 
+3 Implementation & 
+Functionality 4 
+Working application, correct integration of 
+technologies/services, and successful execution of 
+major features 
+4 Security & Access 
+Control 2 Authentication, authorization, access control, data 
+protection, and secure configuration 
+5 Database & Data 
+Management 2 
+Appropriate database/storage selection, data 
+organization, CRUD operations, and data 
+management 
+6 Deployment & DevOps 2 
+Deployment process, automation/CI-CD where 
+applicable, configuration management, and 
+reproducibility 
+7 
+Monitoring, 
+Performance & 
+Optimization 
+1 Monitoring, logging, performance analysis, 
+resource utilization, and optimization 
+8 Documentation & 
+Presentation 2 
+Architecture diagram, documentation, screenshots, 
+demonstration, and explanation of technical 
+decisions 
+9 Innovation & Problem 
+Solving 1 Creativity, additional features, technical 
+challenges, and problem-solving approach 
+— TOTAL 20 — 
+ 
