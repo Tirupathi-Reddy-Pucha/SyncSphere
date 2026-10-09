@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Server, HardDrive, ShieldAlert, CheckCircle2, Clock, RefreshCw, Cpu } from 'lucide-react';
 
-export default function TelemetryDashboard() {
+export default function TelemetryDashboard({ userEmail }) {
     const [health, setHealth] = useState(null);
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -28,6 +28,26 @@ export default function TelemetryDashboard() {
             console.error('Telemetry fetch error:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const formatLogUser = (logUser) => {
+        if (!logUser) return 'System';
+
+        // Extract device tag if present (e.g. 💻 Desktop or 📱 Mobile)
+        const deviceMatch = logUser.match(/\((💻 Desktop|📱 Mobile)\)/);
+        const deviceTag = deviceMatch ? deviceMatch[1] : '';
+
+        // Check if log contains current userEmail
+        const isSelf = userEmail && logUser.toLowerCase().includes(userEmail.toLowerCase());
+
+        if (isSelf) {
+            return `${deviceTag ? deviceTag + ' ' : ''}(You)`;
+        } else {
+            // Extract email or fallback to display name cleanly
+            const emailMatch = logUser.match(/<([^>]+)>/);
+            const email = emailMatch ? emailMatch[1] : logUser.replace(/\((💻 Desktop|📱 Mobile)\)/, '').trim();
+            return `${email}${deviceTag ? ' (' + deviceTag + ')' : ''}`;
         }
     };
 
@@ -129,7 +149,7 @@ export default function TelemetryDashboard() {
                                     </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                                    <span>User: <strong style={{ color: 'var(--text-muted)' }}>{log.user}</strong></span>
+                                    <span>User: <strong style={{ color: 'var(--accent-cyan)' }}>{formatLogUser(log.user)}</strong></span>
                                     <span>•</span>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                         <Clock size={12} /> {new Date(log.timestamp).toLocaleTimeString()}

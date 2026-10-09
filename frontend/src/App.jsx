@@ -29,7 +29,7 @@ export default function App() {
                 {activeTab === 'workspaces' && <WorkspaceList activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
                 {activeTab === 'files' && <FileManager activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
                 {activeTab === 'ai' && <AiSecurityScanner activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
-                {activeTab === 'telemetry' && <TelemetryDashboard activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
+                {activeTab === 'telemetry' && <TelemetryDashboard userEmail={userEmail} />}
             </main>
 
             {/* Footer */}
