@@ -1,0 +1,7 @@
+
+NAME: app-syncsphere-api-2026
+STATE: QuotaExceeded
+ENABLED: True
+USAGE_STATE: Exceeded
+AVAILABILITY_STATE: Normal
+DEFAULT_HOSTNAME: app-syncsphere-api-2026.azurewebsites.net

@@ -117,12 +117,28 @@ const addAiCodeReview = (codeSnippet, feedback, securityScore) => {
     return review;
 };
 
+const updateTaskStatus = (taskId, status) => {
+    const task = state.tasks.find(t => t.id === taskId);
+    if (task) {
+        task.status = status;
+        state.logs.unshift({
+            id: uuidv4(),
+            timestamp: new Date().toISOString(),
+            user: task.assignee || 'User',
+            action: `Updated task "${task.title}" status to ${status}`,
+            severity: 'Info'
+        });
+    }
+    return task;
+};
+
 module.exports = {
     getWorkspaces,
     getWorkspaceById,
     createWorkspace,
     getTasks,
     createTask,
+    updateTaskStatus,
     getLogs,
     addLog,
     getAiCodeReviews,

@@ -105,6 +105,23 @@ export default function WorkspaceList() {
         }
     };
 
+    const handleToggleTaskStatus = async (task) => {
+        const nextStatus = task.status === 'Completed' ? 'In Progress' : 'Completed';
+        try {
+            const res = await fetch('/api/workspaces/tasks', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ taskId: task.id, status: nextStatus })
+            });
+            const json = await res.json();
+            if (json.success) {
+                setTasks(tasks.map(t => t.id === task.id ? { ...t, status: nextStatus } : t));
+            }
+        } catch (err) {
+            console.error('Error toggling task status:', err);
+        }
+    };
+
     return (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.5rem' }}>
 
@@ -207,8 +224,20 @@ export default function WorkspaceList() {
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.725rem', color: 'var(--text-dim)' }}>
                                     <span>Assignee: {t.assignee}</span>
-                                    <span style={{ color: t.status === 'Completed' ? 'var(--accent-emerald)' : 'var(--accent-cyan)', fontWeight: 600 }}>
-                                        {t.status}
+                                    <span
+                                        onClick={() => handleToggleTaskStatus(t)}
+                                        style={{
+                                            color: t.status === 'Completed' ? 'var(--accent-emerald)' : 'var(--accent-cyan)',
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                            padding: '2px 8px',
+                                            borderRadius: '4px',
+                                            background: t.status === 'Completed' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(6, 182, 212, 0.15)',
+                                            border: `1px solid ${t.status === 'Completed' ? 'var(--accent-emerald)' : 'var(--accent-cyan)'}`
+                                        }}
+                                        title="Click to toggle status"
+                                    >
+                                        {t.status === 'Completed' ? '✓ Completed' : '⏳ In Progress'}
                                     </span>
                                 </div>
                             </div>
