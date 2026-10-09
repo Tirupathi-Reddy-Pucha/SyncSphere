@@ -34,7 +34,16 @@ app.use('/api/files', fileRoutes);
 app.use('/api/ai', aiRoutes);
 
 // Serve compiled React Frontend SPA static assets
-const distPath = path.resolve(__dirname, '../../frontend/dist');
+const fs = require('fs');
+let distPath = path.join(__dirname, '../frontend/dist');
+if (!fs.existsSync(distPath)) {
+    distPath = path.join(__dirname, '../../frontend/dist');
+}
+if (!fs.existsSync(distPath)) {
+    distPath = path.join(process.cwd(), 'frontend/dist');
+}
+
+console.log('Serving Static Frontend SPA from:', distPath);
 app.use(express.static(distPath));
 
 // Fallback for React Router / SPA routing
@@ -45,6 +54,7 @@ app.get('*', (req, res, next) => {
     const indexHtml = path.join(distPath, 'index.html');
     res.sendFile(indexHtml, (err) => {
         if (err) {
+            console.error('Error serving index.html:', err);
             res.json({
                 name: 'SyncSphere Cloud Project Collaboration API',
                 version: '1.0.0',
