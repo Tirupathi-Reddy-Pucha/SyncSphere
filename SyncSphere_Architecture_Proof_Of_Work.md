@@ -12,7 +12,7 @@
 * **Direct Proof Links:**
   * 🌐 **Live Application URL:** [https://app-syncsphere-api-2026.azurewebsites.net/](https://app-syncsphere-api-2026.azurewebsites.net/)
   * 🐙 **Source Code (`App.jsx` on GitHub):** [App.jsx](https://github.com/Tirupathi-Reddy-Pucha/SyncSphere/blob/main/frontend/src/App.jsx)
-  * ☁️ **Azure App Service Portal Location:** [Open in Azure Portal](https://portal.azure.com/#@cb.students.amrita.edu/resource/subscriptions/a76241a6-5571-4c87-9829-a08e0ef360b9/resourceGroups/rg-syncsphere-eastus2/providers/Microsoft.Web/sites/app-syncsphere-api-2026/overview)
+  * ☁️ **Azure App Service Portal Location:** [Open App Service in Azure Portal](https://portal.azure.com/#@cb.students.amrita.edu/resource/subscriptions/a76241a6-5571-4c87-9829-a08e0ef360b9/resourceGroups/rg-syncsphere-eastus2/providers/Microsoft.Web/sites/app-syncsphere-api-2026/overview)
 
 ---
 
@@ -28,13 +28,13 @@
 ---
 
 ## 3. Async Cloud Storage & Azure Blob Asset Manager
-* **Tech Stack:** `@azure/storage-blob` SDK, Buffer Streaming, Auto MIME Detection
-* **Azure Host:** Azure Blob Storage (`stsyncsphere2026` / Container: `workspace-assets`)
-* **Feature Summary:** Direct memory buffer streaming to Azure Blob Storage container `workspace-assets`. Features automatic MIME-type preservation, direct SAS download links, and instant deletion capabilities.
+* **Tech Stack:** `@azure/storage-blob` SDK, Buffer Streaming, MIME Auto-Detection
+* **Azure Host:** Azure Storage & Resource Group (`rg-syncsphere-eastus2`)
+* **Feature Summary:** Direct memory buffer streaming with automatic MIME preservation, direct download preview links, and instant blob deletion capabilities.
 * **Direct Proof Links:**
   * 🗄️ **Live Asset Manager UI:** [https://app-syncsphere-api-2026.azurewebsites.net/](https://app-syncsphere-api-2026.azurewebsites.net/)
   * 🐙 **Source Code (`azureBlobService.js` on GitHub):** [azureBlobService.js](https://github.com/Tirupathi-Reddy-Pucha/SyncSphere/blob/main/backend/src/services/azureBlobService.js)
-  * ☁️ **Azure Storage Container Portal Location:** [Open Storage Account in Azure Portal](https://portal.azure.com/#@cb.students.amrita.edu/resource/subscriptions/a76241a6-5571-4c87-9829-a08e0ef360b9/resourceGroups/rg-syncsphere-eastus2/providers/Microsoft.Storage/storageAccounts/stsyncsphere2026/overview)
+  * ☁️ **Azure Resource Group Portal Location:** [Open Resource Group in Azure Portal](https://portal.azure.com/#@cb.students.amrita.edu/resource/subscriptions/a76241a6-5571-4c87-9829-a08e0ef360b9/resourceGroups/rg-syncsphere-eastus2/overview)
 
 ---
 
@@ -67,7 +67,7 @@
 * **Direct Proof Links:**
   * 📊 **Live Telemetry & Audit Stream UI:** [https://app-syncsphere-api-2026.azurewebsites.net/](https://app-syncsphere-api-2026.azurewebsites.net/)
   * 🐙 **Source Code (`TelemetryDashboard.jsx` on GitHub):** [TelemetryDashboard.jsx](https://github.com/Tirupathi-Reddy-Pucha/SyncSphere/blob/main/frontend/src/components/TelemetryDashboard.jsx)
-  * ☁️ **Azure Resource Group Portal Location:** [Open Resource Group in Azure Portal](https://portal.azure.com/#@cb.students.amrita.edu/resource/subscriptions/a76241a6-5571-4c87-9829-a08e0ef360b9/resourceGroup/rg-syncsphere-eastus2/overview)
+  * ☁️ **Azure Resource Group Portal Location:** [Open Resource Group in Azure Portal](https://portal.azure.com/#@cb.students.amrita.edu/resource/subscriptions/a76241a6-5571-4c87-9829-a08e0ef360b9/resourceGroups/rg-syncsphere-eastus2/overview)
 
 ---
 

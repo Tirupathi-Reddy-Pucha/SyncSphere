@@ -8,25 +8,33 @@ from pptx.enum.shapes import MSO_SHAPE
 
 def create_presentation():
     prs = Presentation()
-    # 16:9 widescreen slides
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
     blank_layout = prs.slide_layouts[6]
 
-    # Color Palette (Dark Theme / Cyan Accent)
-    DARK_BG = RGBColor(15, 23, 42)       # #0f172a
-    PANEL_BG = RGBColor(30, 41, 59)     # #1e293b
-    CYAN_ACCENT = RGBColor(6, 182, 212)   # #06b6d4
-    EMERALD_ACCENT = RGBColor(16, 185, 129)# #10b981
+    DARK_BG = RGBColor(15, 23, 42)
+    PANEL_BG = RGBColor(30, 41, 59)
+    CYAN_ACCENT = RGBColor(6, 182, 212)
+    EMERALD_ACCENT = RGBColor(16, 185, 129)
     WHITE = RGBColor(255, 255, 255)
-    LIGHT_GRAY = RGBColor(203, 213, 225) # #cbd5e1
-    AMBER_ACCENT = RGBColor(245, 158, 11) # #f59e0b
+    LIGHT_GRAY = RGBColor(203, 213, 225)
+    AMBER_ACCENT = RGBColor(245, 158, 11)
 
     def add_background(slide):
         background = slide.background
         fill = background.fill
         fill.solid()
         fill.fore_color.rgb = DARK_BG
+
+    # Verified Direct Links
+    AZURE_PORTAL_BASE = "https://portal.azure.com/#@cb.students.amrita.edu/resource"
+    SUB = "a76241a6-5571-4c87-9829-a08e0ef360b9"
+    RG = "rg-syncsphere-eastus2"
+    APP_NAME = "app-syncsphere-api-2026"
+
+    APP_SERVICE_PORTAL_LINK = f"{AZURE_PORTAL_BASE}/subscriptions/{SUB}/resourceGroups/{RG}/providers/Microsoft.Web/sites/{APP_NAME}/overview"
+    RG_PORTAL_LINK = f"{AZURE_PORTAL_BASE}/subscriptions/{SUB}/resourceGroups/{RG}/overview"
+    APP_CONFIG_PORTAL_LINK = f"{AZURE_PORTAL_BASE}/subscriptions/{SUB}/resourceGroups/{RG}/providers/Microsoft.Web/sites/{APP_NAME}/configuration"
 
     slides_data = [
         {
@@ -46,31 +54,31 @@ def create_presentation():
             "proofs": [
                 {"label": "🌐 Live Web Application URL", "url": "https://app-syncsphere-api-2026.azurewebsites.net/"},
                 {"label": "🐙 Source Code (App.jsx on GitHub)", "url": "https://github.com/Tirupathi-Reddy-Pucha/SyncSphere/blob/main/frontend/src/App.jsx"},
-                {"label": "☁️ Azure App Service Portal Location", "url": "https://portal.azure.com/#@cb.students.amrita.edu/resource/subscriptions/a76241a6-5571-4c87-9829-a08e0ef360b9/resourceGroups/rg-syncsphere-eastus2/providers/Microsoft.Web/sites/app-syncsphere-api-2026/overview"}
+                {"label": "☁️ Azure App Service Portal Location", "url": APP_SERVICE_PORTAL_LINK}
             ]
         },
         {
             "num": "2",
             "heading": "2. Backend REST API Microservices",
             "tech": "Node.js • Express.js • RESTful API Architecture",
-            "host": "Azure App Service (app-syncsphere-api-2026 / F1 Free Tier)",
+            "host": "Azure App Service (app-syncsphere-api-2026)",
             "description": "High-performance Node.js Express backend serving REST API routes for project workspaces, live task board updates, blob uploads, and AI security diagnostics.",
             "proofs": [
                 {"label": "⚡ Live Health API Endpoint URL", "url": "https://app-syncsphere-api-2026.azurewebsites.net/api/telemetry/health"},
                 {"label": "🐙 Source Code (server.js on GitHub)", "url": "https://github.com/Tirupathi-Reddy-Pucha/SyncSphere/blob/main/backend/src/server.js"},
-                {"label": "☁️ Azure App Service Configuration Portal", "url": "https://portal.azure.com/#@cb.students.amrita.edu/resource/subscriptions/a76241a6-5571-4c87-9829-a08e0ef360b9/resourceGroups/rg-syncsphere-eastus2/providers/Microsoft.Web/sites/app-syncsphere-api-2026/configuration"}
+                {"label": "☁️ Azure App Service Configuration Portal", "url": APP_CONFIG_PORTAL_LINK}
             ]
         },
         {
             "num": "3",
             "heading": "3. Async Cloud Storage & Asset Manager",
             "tech": "@azure/storage-blob SDK • Buffer Streaming • MIME Auto-Detection",
-            "host": "Azure Blob Storage (Account: stsyncsphere2026 / Container: workspace-assets)",
-            "description": "Direct memory buffer streaming to Azure Blob Storage container workspace-assets. Features auto MIME-type preservation, direct SAS download links, and instant deletion.",
+            "host": "Azure Storage & Fallback Assets Container",
+            "description": "Direct memory buffer streaming with automatic MIME preservation, direct preview download links, and instant blob deletion capabilities.",
             "proofs": [
                 {"label": "🗄️ Live Asset Manager UI", "url": "https://app-syncsphere-api-2026.azurewebsites.net/"},
                 {"label": "🐙 Source Code (azureBlobService.js on GitHub)", "url": "https://github.com/Tirupathi-Reddy-Pucha/SyncSphere/blob/main/backend/src/services/azureBlobService.js"},
-                {"label": "☁️ Azure Blob Container Storage Portal", "url": "https://portal.azure.com/#@cb.students.amrita.edu/resource/subscriptions/a76241a6-5571-4c87-9829-a08e0ef360b9/resourceGroups/rg-syncsphere-eastus2/providers/Microsoft.Storage/storageAccounts/stsyncsphere2026/overview"}
+                {"label": "☁️ Azure Resource Group Portal Location", "url": RG_PORTAL_LINK}
             ]
         },
         {
@@ -106,7 +114,7 @@ def create_presentation():
             "proofs": [
                 {"label": "📊 Live Telemetry & Audit Stream UI", "url": "https://app-syncsphere-api-2026.azurewebsites.net/"},
                 {"label": "🐙 Source Code (TelemetryDashboard.jsx on GitHub)", "url": "https://github.com/Tirupathi-Reddy-Pucha/SyncSphere/blob/main/frontend/src/components/TelemetryDashboard.jsx"},
-                {"label": "☁️ Azure Resource Group Portal Location", "url": "https://portal.azure.com/#@cb.students.amrita.edu/resource/subscriptions/a76241a6-5571-4c87-9829-a08e0ef360b9/resourceGroup/rg-syncsphere-eastus2/overview"}
+                {"label": "☁️ Azure Resource Group Portal Location", "url": RG_PORTAL_LINK}
             ]
         },
         {
@@ -128,7 +136,6 @@ def create_presentation():
         add_background(slide)
 
         if item.get("slide_type") == "title":
-            # Title Card Box
             tb = slide.shapes.add_textbox(Inches(1.0), Inches(1.5), Inches(11.333), Inches(4.5))
             tf = tb.text_frame
             tf.word_wrap = True
@@ -154,7 +161,6 @@ def create_presentation():
             p3.alignment = PP_ALIGN.CENTER
             p3.space_before = Pt(20)
 
-            # Link Buttons Box
             btn_box = slide.shapes.add_textbox(Inches(2.0), Inches(5.2), Inches(9.333), Inches(1.5))
             btf = btn_box.text_frame
             btf.word_wrap = True
@@ -175,14 +181,12 @@ def create_presentation():
             bp2.space_before = Pt(10)
 
         else:
-            # Main Panel Background Shape
             shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(0.6), Inches(11.733), Inches(6.3))
             shape.fill.solid()
             shape.fill.fore_color.rgb = PANEL_BG
             shape.line.color.rgb = CYAN_ACCENT
             shape.line.width = Pt(1.5)
 
-            # Slide Heading Box
             tb = slide.shapes.add_textbox(Inches(1.2), Inches(0.8), Inches(10.933), Inches(1.2))
             tf = tb.text_frame
             tf.word_wrap = True
@@ -199,7 +203,6 @@ def create_presentation():
             tp.font.color.rgb = EMERALD_ACCENT
             tp.space_before = Pt(6)
 
-            # Description Paragraph
             dp_box = slide.shapes.add_textbox(Inches(1.2), Inches(2.1), Inches(10.933), Inches(1.2))
             dtf = dp_box.text_frame
             dtf.word_wrap = True
@@ -216,7 +219,6 @@ def create_presentation():
             dp2.font.color.rgb = LIGHT_GRAY
             dp2.space_before = Pt(4)
 
-            # Proof Links Box
             pl_box = slide.shapes.add_textbox(Inches(1.2), Inches(3.6), Inches(10.933), Inches(3.0))
             pltf = pl_box.text_frame
             pltf.word_wrap = True
