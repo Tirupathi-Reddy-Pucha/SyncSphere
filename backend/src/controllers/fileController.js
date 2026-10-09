@@ -1,7 +1,8 @@
 const azureBlobService = require('../services/azureBlobService');
 const stateStore = require('../services/stateStoreService');
+const { runSecurityScan } = require('./aiController');
 
-// Upload file to Azure Blob Storage
+// Upload file to Azure Blob Storage with Automated Security Scan
 exports.uploadFile = async (req, res) => {
     try {
         if (!req.file) {
@@ -13,13 +14,37 @@ exports.uploadFile = async (req, res) => {
         // Upload directly to Azure Blob Container
         const blobResult = await azureBlobService.uploadFileToBlob(buffer, originalname, mimetype);
 
-        // Log action to security & system audit log
-        stateStore.addLog('User', `Uploaded asset "${originalname}" (${(buffer.length / 1024).toFixed(1)} KB) to Azure Blob Storage`, 'Success');
+        // Automated AI Security Scan for code / config text files
+        let securityScan = null;
+        const isTextOrCode = mimetype.startsWith('text/') ||
+            /\.(js|ts|py|json|yml|yaml|env|sql|bicep|tf|html|css|txt|sh)$/i.test(originalname);
+
+        if (isTextOrCode && buffer) {
+            const fileContent = buffer.toString('utf-8');
+            securityScan = runSecurityScan(fileContent);
+
+            if (securityScan.score < 80) {
+                stateStore.addLog(
+                    'Azure AI Security Scanner',
+                    `🚨 Security Alert: Asset "${originalname}" uploaded with risks (Score: ${securityScan.score}/100)`,
+                    'Warning'
+                );
+            } else {
+                stateStore.addLog(
+                    'Azure AI Security Scanner',
+                    `✅ Asset "${originalname}" security scan passed (Score: ${securityScan.score}/100)`,
+                    'Success'
+                );
+            }
+        } else {
+            stateStore.addLog('User', `Uploaded asset "${originalname}" (${(buffer.length / 1024).toFixed(1)} KB) to Azure Blob Storage`, 'Success');
+        }
 
         res.status(201).json({
             success: true,
-            message: 'File uploaded successfully to Azure Blob Storage!',
-            data: blobResult
+            message: `File "${originalname}" uploaded successfully to Azure Blob Storage!`,
+            data: blobResult,
+            securityScan
         });
     } catch (error) {
         console.error('File upload error:', error);

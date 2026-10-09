@@ -42,7 +42,11 @@ export default function FileManager() {
             });
             const json = await res.json();
             if (json.success) {
-                setUploadStatus({ type: 'success', message: `File "${selectedFile.name}" uploaded to Azure Blob Container workspace-assets!` });
+                setUploadStatus({
+                    type: json.securityScan && json.securityScan.score < 80 ? 'warning' : 'success',
+                    message: json.message || `File "${selectedFile.name}" uploaded to Azure Container workspace-assets!`,
+                    securityScan: json.securityScan
+                });
                 fetchFiles();
             } else {
                 setUploadStatus({ type: 'error', message: json.message || 'Upload failed' });
@@ -111,9 +115,27 @@ export default function FileManager() {
                 </label>
 
                 {uploadStatus && (
-                    <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', borderRadius: '10px', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: uploadStatus.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)', color: uploadStatus.type === 'success' ? '#34d399' : '#f87171', border: `1px solid ${uploadStatus.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}` }}>
-                        <FileCheck size={16} />
-                        {uploadStatus.message}
+                    <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ padding: '0.75rem 1rem', borderRadius: '10px', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: uploadStatus.type === 'warning' ? 'rgba(245, 158, 11, 0.15)' : uploadStatus.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)', color: uploadStatus.type === 'warning' ? '#fbbf24' : uploadStatus.type === 'success' ? '#34d399' : '#f87171', border: `1px solid ${uploadStatus.type === 'warning' ? 'rgba(245, 158, 11, 0.3)' : uploadStatus.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}` }}>
+                            <FileCheck size={16} />
+                            {uploadStatus.message}
+                        </div>
+
+                        {uploadStatus.securityScan && (
+                            <div className="glass-panel" style={{ width: '100%', maxWidth: '600px', padding: '1rem', textAlign: 'left', background: 'rgba(10, 15, 26, 0.9)', border: '1px solid var(--border-subtle)', borderRadius: '12px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                        🛡️ Automated AI Cloud Security Diagnostic
+                                    </span>
+                                    <span className={`badge ${uploadStatus.securityScan.score >= 80 ? 'badge-emerald' : 'badge-amber'}`}>
+                                        Score: {uploadStatus.securityScan.score} / 100
+                                    </span>
+                                </div>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontFamily: 'monospace', whiteSpace: 'pre-wrap', background: 'rgba(0,0,0,0.4)', padding: '0.75rem', borderRadius: '8px' }}>
+                                    {uploadStatus.securityScan.feedback}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
