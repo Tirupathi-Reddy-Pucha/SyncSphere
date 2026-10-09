@@ -117,14 +117,15 @@ const addAiCodeReview = (codeSnippet, feedback, securityScore) => {
     return review;
 };
 
-const updateTaskStatus = (taskId, status) => {
+const updateTaskStatus = (taskId, status, updatedBy) => {
     const task = state.tasks.find(t => t.id === taskId);
     if (task) {
         task.status = status;
+        const user = updatedBy || task.assignee || 'User';
         state.logs.unshift({
             id: uuidv4(),
             timestamp: new Date().toISOString(),
-            user: task.assignee || 'User',
+            user: user,
             action: `Updated task "${task.title}" status to ${status}`,
             severity: 'Info'
         });

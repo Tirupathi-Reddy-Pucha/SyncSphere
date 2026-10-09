@@ -8,6 +8,7 @@ import TelemetryDashboard from './components/TelemetryDashboard';
 export default function App() {
     const [activeTab, setActiveTab] = useState('workspaces');
     const [health, setHealth] = useState(null);
+    const [activeUser, setActiveUser] = useState('Tirupathi Reddy (Project Lead)');
 
     useEffect(() => {
         fetch('/health')
@@ -20,14 +21,14 @@ export default function App() {
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
             {/* Header Bar */}
-            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} />
+            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} activeUser={activeUser} setActiveUser={setActiveUser} />
 
             {/* Main Workspace Canvas */}
             <main style={{ flex: 1, maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '2rem 1.5rem' }}>
-                {activeTab === 'workspaces' && <WorkspaceList />}
-                {activeTab === 'files' && <FileManager />}
-                {activeTab === 'ai' && <AiSecurityScanner />}
-                {activeTab === 'telemetry' && <TelemetryDashboard />}
+                {activeTab === 'workspaces' && <WorkspaceList activeUser={activeUser} />}
+                {activeTab === 'files' && <FileManager activeUser={activeUser} />}
+                {activeTab === 'ai' && <AiSecurityScanner activeUser={activeUser} />}
+                {activeTab === 'telemetry' && <TelemetryDashboard activeUser={activeUser} />}
             </main>
 
             {/* Footer */}

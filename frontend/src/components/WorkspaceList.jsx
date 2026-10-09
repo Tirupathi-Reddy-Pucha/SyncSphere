@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, CheckCircle2, Clock, Users, Tag, AlertCircle, Sparkles, FolderPlus } from 'lucide-react';
 
-export default function WorkspaceList() {
+export default function WorkspaceList({ activeUser }) {
     const [workspaces, setWorkspaces] = useState([]);
     const [selectedWs, setSelectedWs] = useState(null);
     const [tasks, setTasks] = useState([]);
@@ -64,7 +64,7 @@ export default function WorkspaceList() {
                     title: newTitle,
                     description: newDesc,
                     category: newCat,
-                    author: 'Tirupathi Reddy'
+                    author: activeUser || 'Tirupathi Reddy'
                 })
             });
             const json = await res.json();
@@ -92,7 +92,7 @@ export default function WorkspaceList() {
                     workspaceId: selectedWs.id,
                     title: newTaskTitle,
                     priority: newTaskPriority,
-                    assignee: 'Tirupathi Reddy'
+                    assignee: activeUser || 'Tirupathi Reddy'
                 })
             });
             const json = await res.json();
@@ -111,11 +111,11 @@ export default function WorkspaceList() {
             const res = await fetch('/api/workspaces/tasks', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ taskId: task.id, status: nextStatus })
+                body: JSON.stringify({ taskId: task.id, status: nextStatus, updatedBy: activeUser })
             });
             const json = await res.json();
             if (json.success) {
-                setTasks(tasks.map(t => t.id === task.id ? { ...t, status: nextStatus } : t));
+                setTasks(tasks.map(t => t.id === task.id ? { ...t, status: nextStatus, assignee: activeUser || t.assignee } : t));
             }
         } catch (err) {
             console.error('Error toggling task status:', err);

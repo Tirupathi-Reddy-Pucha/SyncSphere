@@ -78,11 +78,11 @@ exports.createTask = (req, res) => {
 // Update task status
 exports.updateTaskStatus = (req, res) => {
     try {
-        const { taskId, status } = req.body;
+        const { taskId, status, updatedBy } = req.body;
         if (!taskId || !status) {
             return res.status(400).json({ success: false, message: 'taskId and status are required' });
         }
-        const updatedTask = stateStore.updateTaskStatus(taskId, status);
+        const updatedTask = stateStore.updateTaskStatus(taskId, status, updatedBy);
         res.json({ success: true, data: updatedTask });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
