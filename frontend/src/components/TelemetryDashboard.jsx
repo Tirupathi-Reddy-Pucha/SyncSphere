@@ -53,6 +53,18 @@ export default function TelemetryDashboard({ clientSessionId }) {
         }
     };
 
+    const handleClearLogs = async () => {
+        try {
+            const res = await fetch('/api/workspaces/logs', { method: 'DELETE' });
+            const json = await res.json();
+            if (json.success) {
+                setLogs([]);
+            }
+        } catch (err) {
+            console.error('Error clearing logs:', err);
+        }
+    };
+
     const getSeverityBadge = (severity) => {
         switch (severity) {
             case 'Success': return <span className="badge badge-emerald">Success</span>;
@@ -133,7 +145,16 @@ export default function TelemetryDashboard({ clientSessionId }) {
             <div className="glass-panel" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span>Security & System Audit Log ({logs.length})</span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Live Stream</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                            onClick={handleClearLogs}
+                            className="btn-secondary"
+                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', background: 'rgba(244, 63, 94, 0.1)', color: '#f87171', border: '1px solid rgba(244, 63, 94, 0.3)' }}
+                        >
+                            Reset Logs
+                        </button>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Live Stream</span>
+                    </div>
                 </h3>
 
                 {loading ? (

@@ -36,11 +36,7 @@ const state = {
         { id: 'tsk-3', workspaceId: 'ws-101', title: 'Implement Real-Time Multi-User Collaborative Editor', priority: 'High', status: 'In Progress', assignee: 'Tirupathi Reddy' },
         { id: 'tsk-4', workspaceId: 'ws-101', title: 'Azure Application Insights Telemetry Dashboard', priority: 'Medium', status: 'In Progress', assignee: 'AI Specialist' }
     ],
-    logs: [
-        { id: 'log-1', timestamp: new Date(Date.now() - 3600000 * 2).toISOString(), user: 'Tirupathi Reddy', action: 'Provisioned Storage Account stsyncsphere2026', severity: 'Info' },
-        { id: 'log-2', timestamp: new Date(Date.now() - 1800000).toISOString(), user: 'Azure System', action: 'Blob Container workspace-assets verified active', severity: 'Success' },
-        { id: 'log-3', timestamp: new Date().toISOString(), user: 'API Gateway', action: 'App Service app-syncsphere-api-2026 deployed successfully', severity: 'Success' }
-    ],
+    logs: [],
     aiCodeReviews: [
         {
             id: 'rev-1',
@@ -135,6 +131,11 @@ const updateTaskStatus = (taskId, status, updatedBy, deviceTag = '', sessionId =
     return task;
 };
 
+const clearLogs = () => {
+    state.logs = [];
+    return state.logs;
+};
+
 module.exports = {
     getWorkspaces,
     getWorkspaceById,
@@ -144,6 +145,7 @@ module.exports = {
     updateTaskStatus,
     getLogs,
     addLog,
+    clearLogs,
     getAiCodeReviews,
     addAiCodeReview
 };

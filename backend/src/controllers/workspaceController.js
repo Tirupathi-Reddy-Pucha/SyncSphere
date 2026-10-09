@@ -130,3 +130,13 @@ exports.getLogs = (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+// Clear System Audit Logs
+exports.clearLogs = (req, res) => {
+    try {
+        const logs = stateStore.clearLogs();
+        res.json({ success: true, data: logs, message: 'Logs reset successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

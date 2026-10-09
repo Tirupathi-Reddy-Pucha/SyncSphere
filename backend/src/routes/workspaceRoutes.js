@@ -4,6 +4,7 @@ const workspaceController = require('../controllers/workspaceController');
 
 router.get('/', workspaceController.getAllWorkspaces);
 router.get('/logs', workspaceController.getLogs);
+router.delete('/logs', workspaceController.clearLogs);
 router.post('/logs/identity-change', workspaceController.logIdentityChange);
 router.get('/tasks', workspaceController.getTasks);
 router.post('/tasks', workspaceController.createTask);
