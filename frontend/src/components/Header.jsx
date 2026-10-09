@@ -1,7 +1,7 @@
 import React from 'react';
 import { Cloud, ShieldCheck, Activity, UserCheck, HardDrive } from 'lucide-react';
 
-export default function Header({ health, activeTab, setActiveTab, activeUser, setActiveUser }) {
+export default function Header({ health, activeTab, setActiveTab, activeUser, setActiveUser, userEmail, setUserEmail }) {
     return (
         <header style={{ borderBottom: '1px solid var(--border-subtle)', background: 'rgba(11, 15, 25, 0.85)', backdropFilter: 'blur(16px)', sticky: 'top', zIndex: 50 }}>
             <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
@@ -55,14 +55,9 @@ export default function Header({ health, activeTab, setActiveTab, activeUser, se
                     })}
                 </nav>
 
-                {/* Azure Identity & User Role Selector */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                    <div className="badge badge-emerald" style={{ padding: '0.4rem 0.75rem' }}>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} className="animate-pulse-glow"></span>
-                        Azure Student Active
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.35rem 0.75rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+                {/* Azure Identity & User Email Selector */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.65rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                         <UserCheck size={16} color="var(--accent-cyan)" />
                         <select
                             value={activeUser}
@@ -81,8 +76,28 @@ export default function Header({ health, activeTab, setActiveTab, activeUser, se
                             <option value="Tirupathi Reddy (Project Lead)" style={{ background: '#0f172a' }}>Tirupathi Reddy (Project Lead)</option>
                             <option value="DevOps Specialist" style={{ background: '#0f172a' }}>DevOps Specialist</option>
                             <option value="AI Security Engineer" style={{ background: '#0f172a' }}>AI Security Engineer</option>
-                            <option value="Mobile Guest User" style={{ background: '#0f172a' }}>Mobile Guest User</option>
+                            <option value="Guest User" style={{ background: '#0f172a' }}>Guest User</option>
                         </select>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.65rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>✉️</span>
+                        <input
+                            type="email"
+                            value={userEmail}
+                            onChange={(e) => setUserEmail(e.target.value)}
+                            placeholder="user@email.com"
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--accent-cyan)',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                outline: 'none',
+                                width: '150px'
+                            }}
+                            title="Logged-in User Email Account"
+                        />
                     </div>
                 </div>
 

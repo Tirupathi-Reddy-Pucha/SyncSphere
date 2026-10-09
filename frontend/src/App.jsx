@@ -9,6 +9,7 @@ export default function App() {
     const [activeTab, setActiveTab] = useState('workspaces');
     const [health, setHealth] = useState(null);
     const [activeUser, setActiveUser] = useState('Tirupathi Reddy (Project Lead)');
+    const [userEmail, setUserEmail] = useState('tirupathi@gmail.com');
 
     useEffect(() => {
         fetch('/health')
@@ -21,14 +22,14 @@ export default function App() {
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
             {/* Header Bar */}
-            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} activeUser={activeUser} setActiveUser={setActiveUser} />
+            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} activeUser={activeUser} setActiveUser={setActiveUser} userEmail={userEmail} setUserEmail={setUserEmail} />
 
             {/* Main Workspace Canvas */}
             <main style={{ flex: 1, maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '2rem 1.5rem' }}>
-                {activeTab === 'workspaces' && <WorkspaceList activeUser={activeUser} />}
-                {activeTab === 'files' && <FileManager activeUser={activeUser} />}
-                {activeTab === 'ai' && <AiSecurityScanner activeUser={activeUser} />}
-                {activeTab === 'telemetry' && <TelemetryDashboard activeUser={activeUser} />}
+                {activeTab === 'workspaces' && <WorkspaceList activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
+                {activeTab === 'files' && <FileManager activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
+                {activeTab === 'ai' && <AiSecurityScanner activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
+                {activeTab === 'telemetry' && <TelemetryDashboard activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
             </main>
 
             {/* Footer */}
