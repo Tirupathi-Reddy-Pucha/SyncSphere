@@ -1,30 +1,7 @@
 import React from 'react';
-import { Cloud, ShieldCheck, Activity, UserCheck, HardDrive } from 'lucide-react';
+import { Cloud, ShieldCheck, Activity, HardDrive, LogOut, Lock } from 'lucide-react';
 
-export default function Header({ health, activeTab, setActiveTab, activeUser, setActiveUser, userEmail, setUserEmail, clientSessionId }) {
-    const [showModal, setShowModal] = React.useState(false);
-    const [tempEmail, setTempEmail] = React.useState(userEmail || '');
-
-    const handleSaveEmail = async (e) => {
-        e.preventDefault();
-        const trimmed = tempEmail.trim();
-        if (trimmed && trimmed !== userEmail) {
-            const oldMail = userEmail;
-            setUserEmail(trimmed);
-            setShowModal(false);
-
-            try {
-                await fetch('/api/workspaces/logs/identity-change', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-client-session-id': clientSessionId },
-                    body: JSON.stringify({ oldEmail: oldMail, newEmail: trimmed, clientSessionId })
-                });
-            } catch (err) {
-                console.error('Error logging identity change:', err);
-            }
-        }
-    };
-
+export default function Header({ health, activeTab, setActiveTab, userEmail, onLogout }) {
     return (
         <header style={{ borderBottom: '1px solid var(--border-subtle)', background: 'rgba(11, 15, 25, 0.85)', backdropFilter: 'blur(16px)', sticky: 'top', zIndex: 50 }}>
             <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
@@ -78,93 +55,26 @@ export default function Header({ health, activeTab, setActiveTab, activeUser, se
                     })}
                 </nav>
 
-                {/* Azure Identity & Device Email Badge */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.65rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
-                        <UserCheck size={16} color="var(--accent-cyan)" />
-                        <select
-                            value={activeUser}
-                            onChange={(e) => setActiveUser(e.target.value)}
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: 'var(--text-main)',
-                                fontSize: '0.8rem',
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                outline: 'none'
-                            }}
-                            title="Active Role"
-                        >
-                            <option value="Tirupathi Reddy (Project Lead)" style={{ background: '#0f172a' }}>Tirupathi Reddy (Project Lead)</option>
-                            <option value="DevOps Specialist" style={{ background: '#0f172a' }}>DevOps Specialist</option>
-                            <option value="AI Security Engineer" style={{ background: '#0f172a' }}>AI Security Engineer</option>
-                            <option value="Guest User" style={{ background: '#0f172a' }}>Guest User</option>
-                        </select>
-                    </div>
-
-                    <div
-                        onClick={() => { setTempEmail(userEmail); setShowModal(true); }}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.65rem', background: 'rgba(6, 182, 212, 0.08)', borderRadius: '10px', border: '1px solid var(--accent-cyan)', cursor: 'pointer' }}
-                        title="Click to Set Device Email Identity"
-                    >
-                        <span style={{ fontSize: '0.75rem' }}>✉️</span>
+                {/* Locked Authenticated Email Badge & Log Out */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.75rem', background: 'rgba(6, 182, 212, 0.08)', borderRadius: '10px', border: '1px solid var(--accent-cyan)' }}>
+                        <Lock size={14} color="var(--accent-cyan)" />
                         <span style={{ fontSize: '0.8rem', color: 'var(--accent-cyan)', fontWeight: 600 }}>
                             {userEmail}
                         </span>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>⚙️</span>
                     </div>
+
+                    <button
+                        onClick={onLogout}
+                        className="btn-secondary"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.75rem', fontSize: '0.8rem', borderRadius: '10px' }}
+                        title="Sign Out of Session"
+                    >
+                        <LogOut size={14} /> Log Out
+                    </button>
                 </div>
 
             </div>
-
-            {/* Set Identity Modal */}
-            {showModal && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-                    <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '1.5rem', borderRadius: '16px' }}>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-main)' }}>
-                            Set Device Email Account
-                        </h3>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-                            Configure the unique email address for this browser session. This will be locked & recorded in the Azure System Audit Stream.
-                        </p>
-
-                        <form onSubmit={handleSaveEmail}>
-                            <div style={{ marginBottom: '1.25rem' }}>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-dim)', marginBottom: '0.4rem' }}>
-                                    Your Device Email:
-                                </label>
-                                <input
-                                    type="email"
-                                    required
-                                    value={tempEmail}
-                                    onChange={(e) => setTempEmail(e.target.value)}
-                                    placeholder="e.g. tirupathi@gmail.com or coworker@domain.com"
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.65rem 0.85rem',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: '1px solid var(--border-subtle)',
-                                        borderRadius: '8px',
-                                        color: '#ffffff',
-                                        fontSize: '0.875rem',
-                                        outline: 'none'
-                                    }}
-                                />
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary" style={{ padding: '0.5rem 1rem' }}>
-                                    Cancel
-                                </button>
-                                <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1.25rem' }}>
-                                    Save Identity
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </header>
     );
 }

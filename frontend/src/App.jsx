@@ -4,13 +4,13 @@ import WorkspaceList from './components/WorkspaceList';
 import FileManager from './components/FileManager';
 import AiSecurityScanner from './components/AiSecurityScanner';
 import TelemetryDashboard from './components/TelemetryDashboard';
+import LoginScreen from './components/LoginScreen';
 
 export default function App() {
     const [activeTab, setActiveTab] = useState('workspaces');
     const [health, setHealth] = useState(null);
-    const [activeUser, setActiveUser] = useState('Tirupathi Reddy (Project Lead)');
 
-    // Persistent Device Session Token & Locked Email
+    // Persistent Device Session Token
     const [clientSessionId] = useState(() => {
         let sid = localStorage.getItem('syncsphere_session_id');
         if (!sid) {
@@ -20,21 +20,19 @@ export default function App() {
         return sid;
     });
 
+    // Authenticated User Email State
     const [userEmail, setUserEmailState] = useState(() => {
-        let mail = localStorage.getItem('syncsphere_user_email');
-        if (!mail) {
-            const isMobile = /mobile|iphone|ipad|android/i.test(navigator.userAgent || '');
-            mail = isMobile ? 'mobile_user@gmail.com' : 'tirupathi@gmail.com';
-            localStorage.setItem('syncsphere_user_email', mail);
-        }
-        return mail;
+        return localStorage.getItem('syncsphere_user_email') || '';
     });
 
-    const setUserEmail = (newEmail) => {
-        if (newEmail) {
-            localStorage.setItem('syncsphere_user_email', newEmail);
-            setUserEmailState(newEmail);
-        }
+    const handleLogin = (email) => {
+        localStorage.setItem('syncsphere_user_email', email);
+        setUserEmailState(email);
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('syncsphere_user_email');
+        setUserEmailState('');
     };
 
     useEffect(() => {
@@ -44,18 +42,23 @@ export default function App() {
             .catch(err => console.error('Health check failed:', err));
     }, []);
 
+    // Render Login Gateway if not authenticated
+    if (!userEmail) {
+        return <LoginScreen onLogin={handleLogin} />;
+    }
+
     return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
             {/* Header Bar */}
-            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} activeUser={activeUser} setActiveUser={setActiveUser} userEmail={userEmail} setUserEmail={setUserEmail} clientSessionId={clientSessionId} />
+            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} userEmail={userEmail} onLogout={handleLogout} clientSessionId={clientSessionId} />
 
             {/* Main Workspace Canvas */}
             <main style={{ flex: 1, maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '2rem 1.5rem' }}>
-                {activeTab === 'workspaces' && <WorkspaceList activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} clientSessionId={clientSessionId} />}
-                {activeTab === 'files' && <FileManager activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} clientSessionId={clientSessionId} />}
-                {activeTab === 'ai' && <AiSecurityScanner activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} clientSessionId={clientSessionId} />}
-                {activeTab === 'telemetry' && <TelemetryDashboard clientSessionId={clientSessionId} />}
+                {activeTab === 'workspaces' && <WorkspaceList activeUser={userEmail} clientSessionId={clientSessionId} />}
+                {activeTab === 'files' && <FileManager activeUser={userEmail} clientSessionId={clientSessionId} />}
+                {activeTab === 'ai' && <AiSecurityScanner activeUser={userEmail} clientSessionId={clientSessionId} />}
+                {activeTab === 'telemetry' && <TelemetryDashboard clientSessionId={clientSessionId} userEmail={userEmail} />}
             </main>
 
             {/* Footer */}
