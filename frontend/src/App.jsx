@@ -20,14 +20,22 @@ export default function App() {
         return sid;
     });
 
-    const [userEmail] = useState(() => {
+    const [userEmail, setUserEmailState] = useState(() => {
         let mail = localStorage.getItem('syncsphere_user_email');
         if (!mail) {
-            mail = 'tirupathi@gmail.com';
+            const isMobile = /mobile|iphone|ipad|android/i.test(navigator.userAgent || '');
+            mail = isMobile ? 'mobile_user@gmail.com' : 'tirupathi@gmail.com';
             localStorage.setItem('syncsphere_user_email', mail);
         }
         return mail;
     });
+
+    const setUserEmail = (newEmail) => {
+        if (newEmail) {
+            localStorage.setItem('syncsphere_user_email', newEmail);
+            setUserEmailState(newEmail);
+        }
+    };
 
     useEffect(() => {
         fetch('/health')
@@ -40,7 +48,7 @@ export default function App() {
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
             {/* Header Bar */}
-            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} activeUser={activeUser} setActiveUser={setActiveUser} userEmail={userEmail} />
+            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} activeUser={activeUser} setActiveUser={setActiveUser} userEmail={userEmail} setUserEmail={setUserEmail} />
 
             {/* Main Workspace Canvas */}
             <main style={{ flex: 1, maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '2rem 1.5rem' }}>
