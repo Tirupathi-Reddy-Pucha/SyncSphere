@@ -2,7 +2,7 @@ const azureBlobService = require('../services/azureBlobService');
 const stateStore = require('../services/stateStoreService');
 const { runSecurityScan } = require('./aiController');
 
-// Upload file to Azure Blob Storage with Automated Security Scan
+// Upload file to Azure Blob Storage with Automated Security Scan & Email Attribution
 exports.uploadFile = async (req, res) => {
     try {
         if (!req.file) {
@@ -10,6 +10,12 @@ exports.uploadFile = async (req, res) => {
         }
 
         const { originalname, buffer, mimetype } = req.file;
+        const userEmail = req.headers['x-user-email'] || req.body.uploaderEmail || 'Authenticated User';
+        const sessionId = req.headers['x-client-session-id'] || '';
+
+        const userAgent = req.headers['user-agent'] || '';
+        const isMobile = /mobile|iphone|ipad|android/i.test(userAgent);
+        const deviceTag = isMobile ? '📱 Mobile' : '💻 Desktop';
 
         // Upload directly to Azure Blob Container
         const blobResult = await azureBlobService.uploadFileToBlob(buffer, originalname, mimetype);
@@ -26,23 +32,33 @@ exports.uploadFile = async (req, res) => {
             if (securityScan.score < 80) {
                 stateStore.addLog(
                     'Azure AI Security Scanner',
-                    `🚨 Security Alert: Asset "${originalname}" uploaded with risks (Score: ${securityScan.score}/100)`,
-                    'Warning'
+                    `🚨 Security Alert: Asset "${originalname}" uploaded by ${userEmail} (${deviceTag}) with risks (Score: ${securityScan.score}/100)`,
+                    'Warning',
+                    deviceTag,
+                    sessionId
                 );
             } else {
                 stateStore.addLog(
-                    'Azure AI Security Scanner',
-                    `✅ Asset "${originalname}" security scan passed (Score: ${securityScan.score}/100)`,
-                    'Success'
+                    userEmail,
+                    `Uploaded asset "${originalname}" (${(buffer.length / 1024).toFixed(1)} KB) to Azure Storage (${deviceTag}) [Security Score: ${securityScan.score}/100]`,
+                    'Success',
+                    deviceTag,
+                    sessionId
                 );
             }
         } else {
-            stateStore.addLog('User', `Uploaded asset "${originalname}" (${(buffer.length / 1024).toFixed(1)} KB) to Azure Blob Storage`, 'Success');
+            stateStore.addLog(
+                userEmail,
+                `Uploaded asset "${originalname}" (${(buffer.length / 1024).toFixed(1)} KB) to Azure Storage (${deviceTag})`,
+                'Success',
+                deviceTag,
+                sessionId
+            );
         }
 
         res.status(201).json({
             success: true,
-            message: `File "${originalname}" uploaded successfully to Azure Blob Storage!`,
+            message: `File "${originalname}" uploaded successfully by ${userEmail}!`,
             data: blobResult,
             securityScan
         });
@@ -64,13 +80,26 @@ exports.listFiles = async (req, res) => {
     }
 };
 
-// Delete blob from Azure Container
+// Delete blob from Azure Container with User Email attribution
 exports.deleteFile = async (req, res) => {
     try {
         const { blobName } = req.params;
+        const userEmail = req.headers['x-user-email'] || req.body.uploaderEmail || 'Authenticated User';
+        const sessionId = req.headers['x-client-session-id'] || '';
+
+        const userAgent = req.headers['user-agent'] || '';
+        const isMobile = /mobile|iphone|ipad|android/i.test(userAgent);
+        const deviceTag = isMobile ? '📱 Mobile' : '💻 Desktop';
+
         const deleted = await azureBlobService.deleteBlob(blobName);
         if (deleted) {
-            stateStore.addLog('User', `Deleted asset "${blobName}" from Azure Blob Storage`, 'Info');
+            stateStore.addLog(
+                userEmail,
+                `Deleted asset "${blobName}" from Azure Storage (${deviceTag})`,
+                'Info',
+                deviceTag,
+                sessionId
+            );
             res.json({ success: true, message: `Blob ${blobName} deleted successfully` });
         } else {
             res.status(404).json({ success: false, message: 'Blob not found or already deleted' });

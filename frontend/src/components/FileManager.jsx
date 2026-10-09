@@ -33,11 +33,18 @@ export default function FileManager() {
         const formData = new FormData();
         formData.append('file', selectedFile);
 
+        const userEmail = localStorage.getItem('syncsphere_user_email') || '';
+        const sessionId = localStorage.getItem('syncsphere_session_id') || '';
+
         try {
             setUploading(true);
             setUploadStatus(null);
             const res = await fetch('/api/files/upload', {
                 method: 'POST',
+                headers: {
+                    'x-user-email': userEmail,
+                    'x-client-session-id': sessionId
+                },
                 body: formData
             });
             const json = await res.json();
@@ -61,8 +68,17 @@ export default function FileManager() {
     const handleDeleteFile = async (blobName) => {
         if (!window.confirm(`Delete blob "${blobName}" from Azure Storage?`)) return;
 
+        const userEmail = localStorage.getItem('syncsphere_user_email') || '';
+        const sessionId = localStorage.getItem('syncsphere_session_id') || '';
+
         try {
-            const res = await fetch(`/api/files/${encodeURIComponent(blobName)}`, { method: 'DELETE' });
+            const res = await fetch(`/api/files/${encodeURIComponent(blobName)}`, {
+                method: 'DELETE',
+                headers: {
+                    'x-user-email': userEmail,
+                    'x-client-session-id': sessionId
+                }
+            });
             const json = await res.json();
             if (json.success) {
                 setFiles(files.filter(f => f.name !== blobName));
