@@ -48,7 +48,7 @@ export default function App() {
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
             {/* Header Bar */}
-            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} activeUser={activeUser} setActiveUser={setActiveUser} userEmail={userEmail} setUserEmail={setUserEmail} />
+            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} activeUser={activeUser} setActiveUser={setActiveUser} userEmail={userEmail} setUserEmail={setUserEmail} clientSessionId={clientSessionId} />
 
             {/* Main Workspace Canvas */}
             <main style={{ flex: 1, maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '2rem 1.5rem' }}>

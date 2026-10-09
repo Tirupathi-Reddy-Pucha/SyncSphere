@@ -1,15 +1,27 @@
 import React from 'react';
 import { Cloud, ShieldCheck, Activity, UserCheck, HardDrive } from 'lucide-react';
 
-export default function Header({ health, activeTab, setActiveTab, activeUser, setActiveUser, userEmail, setUserEmail }) {
+export default function Header({ health, activeTab, setActiveTab, activeUser, setActiveUser, userEmail, setUserEmail, clientSessionId }) {
     const [showModal, setShowModal] = React.useState(false);
     const [tempEmail, setTempEmail] = React.useState(userEmail || '');
 
-    const handleSaveEmail = (e) => {
+    const handleSaveEmail = async (e) => {
         e.preventDefault();
-        if (tempEmail.trim()) {
-            setUserEmail(tempEmail.trim());
+        const trimmed = tempEmail.trim();
+        if (trimmed && trimmed !== userEmail) {
+            const oldMail = userEmail;
+            setUserEmail(trimmed);
             setShowModal(false);
+
+            try {
+                await fetch('/api/workspaces/logs/identity-change', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-client-session-id': clientSessionId },
+                    body: JSON.stringify({ oldEmail: oldMail, newEmail: trimmed, clientSessionId })
+                });
+            } catch (err) {
+                console.error('Error logging identity change:', err);
+            }
         }
     };
 

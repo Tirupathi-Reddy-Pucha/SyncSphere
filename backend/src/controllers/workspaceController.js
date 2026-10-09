@@ -100,6 +100,27 @@ exports.updateTaskStatus = (req, res) => {
     }
 };
 
+// Log identity change event
+exports.logIdentityChange = (req, res) => {
+    try {
+        const { oldEmail, newEmail, clientSessionId: bodySid } = req.body;
+        const userAgent = req.headers['user-agent'] || '';
+        const isMobile = /mobile|iphone|ipad|android/i.test(userAgent);
+        const deviceTag = isMobile ? '📱 Mobile' : '💻 Desktop';
+        const sessionId = req.headers['x-client-session-id'] || bodySid || '';
+
+        stateStore.addLog(
+            `${oldEmail || 'User'} (${deviceTag})`,
+            `Changed device account email identity from "${oldEmail || 'default'}" to "${newEmail}"`,
+            'Warning',
+            sessionId
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // Get System Audit Logs
 exports.getLogs = (req, res) => {
     try {
