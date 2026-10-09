@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Server, HardDrive, ShieldAlert, CheckCircle2, Clock, RefreshCw, Cpu } from 'lucide-react';
 
-export default function TelemetryDashboard({ userEmail }) {
+export default function TelemetryDashboard({ clientSessionId }) {
     const [health, setHealth] = useState(null);
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -31,15 +31,17 @@ export default function TelemetryDashboard({ userEmail }) {
         }
     };
 
-    const formatLogUser = (logUser) => {
-        if (!logUser) return 'System';
+    const formatLogUser = (log) => {
+        if (!log || !log.user) return 'System';
+
+        const logUser = log.user;
 
         // Extract device tag if present (e.g. 💻 Desktop or 📱 Mobile)
         const deviceMatch = logUser.match(/\((💻 Desktop|📱 Mobile)\)/);
         const deviceTag = deviceMatch ? deviceMatch[1] : '';
 
-        // Check if log contains current userEmail
-        const isSelf = userEmail && logUser.toLowerCase().includes(userEmail.toLowerCase());
+        // Check if log's sessionId matches this client's persistent session
+        const isSelf = clientSessionId && log.sessionId && log.sessionId === clientSessionId;
 
         if (isSelf) {
             return `${deviceTag ? deviceTag + ' ' : ''}(You)`;
@@ -149,7 +151,7 @@ export default function TelemetryDashboard({ userEmail }) {
                                     </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                                    <span>User: <strong style={{ color: 'var(--accent-cyan)' }}>{formatLogUser(log.user)}</strong></span>
+                                    <span>User: <strong style={{ color: 'var(--accent-cyan)' }}>{formatLogUser(log)}</strong></span>
                                     <span>•</span>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                         <Clock size={12} /> {new Date(log.timestamp).toLocaleTimeString()}

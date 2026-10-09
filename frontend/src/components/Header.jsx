@@ -1,7 +1,7 @@
 import React from 'react';
 import { Cloud, ShieldCheck, Activity, UserCheck, HardDrive } from 'lucide-react';
 
-export default function Header({ health, activeTab, setActiveTab, activeUser, setActiveUser, userEmail, setUserEmail }) {
+export default function Header({ health, activeTab, setActiveTab, activeUser, setActiveUser, userEmail }) {
     return (
         <header style={{ borderBottom: '1px solid var(--border-subtle)', background: 'rgba(11, 15, 25, 0.85)', backdropFilter: 'blur(16px)', sticky: 'top', zIndex: 50 }}>
             <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
@@ -55,7 +55,7 @@ export default function Header({ health, activeTab, setActiveTab, activeUser, se
                     })}
                 </nav>
 
-                {/* Azure Identity & User Email Selector */}
+                {/* Azure Identity & Locked User Email Badge */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.65rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
                         <UserCheck size={16} color="var(--accent-cyan)" />
@@ -71,7 +71,7 @@ export default function Header({ health, activeTab, setActiveTab, activeUser, se
                                 cursor: 'pointer',
                                 outline: 'none'
                             }}
-                            title="Switch Active Team Member Role"
+                            title="Active Role"
                         >
                             <option value="Tirupathi Reddy (Project Lead)" style={{ background: '#0f172a' }}>Tirupathi Reddy (Project Lead)</option>
                             <option value="DevOps Specialist" style={{ background: '#0f172a' }}>DevOps Specialist</option>
@@ -80,24 +80,11 @@ export default function Header({ health, activeTab, setActiveTab, activeUser, se
                         </select>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.65rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>✉️</span>
-                        <input
-                            type="email"
-                            value={userEmail}
-                            onChange={(e) => setUserEmail(e.target.value)}
-                            placeholder="user@email.com"
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: 'var(--accent-cyan)',
-                                fontSize: '0.8rem',
-                                fontWeight: 600,
-                                outline: 'none',
-                                width: '150px'
-                            }}
-                            title="Logged-in User Email Account"
-                        />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.65rem', background: 'rgba(6, 182, 212, 0.08)', borderRadius: '10px', border: '1px solid var(--accent-cyan)' }} title="Session Verified Account (Locked Identity)">
+                        <span style={{ fontSize: '0.75rem' }}>🔒 ✉️</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--accent-cyan)', fontWeight: 600 }}>
+                            {userEmail}
+                        </span>
                     </div>
                 </div>
 

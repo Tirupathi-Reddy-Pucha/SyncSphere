@@ -62,7 +62,7 @@ exports.getTasks = (req, res) => {
 // Create task
 exports.createTask = (req, res) => {
     try {
-        const { workspaceId, title, priority, assignee } = req.body;
+        const { workspaceId, title, priority, assignee, clientSessionId: bodySid } = req.body;
         if (!title || !workspaceId) {
             return res.status(400).json({ success: false, message: 'Title and workspaceId are required' });
         }
@@ -70,9 +70,10 @@ exports.createTask = (req, res) => {
         const userAgent = req.headers['user-agent'] || '';
         const isMobile = /mobile|iphone|ipad|android/i.test(userAgent);
         const deviceTag = isMobile ? '📱 Mobile' : '💻 Desktop';
+        const sessionId = req.headers['x-client-session-id'] || bodySid || '';
 
         const newTask = stateStore.createTask({ workspaceId, title, priority, assignee });
-        stateStore.addLog(assignee + ` (${deviceTag})`, `Created task "${title}" in workspace ${workspaceId}`, 'Info');
+        stateStore.addLog(assignee + ` (${deviceTag})`, `Created task "${title}" in workspace ${workspaceId}`, 'Info', sessionId);
         res.status(201).json({ success: true, data: newTask });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -82,7 +83,7 @@ exports.createTask = (req, res) => {
 // Update task status
 exports.updateTaskStatus = (req, res) => {
     try {
-        const { taskId, status, updatedBy } = req.body;
+        const { taskId, status, updatedBy, clientSessionId: bodySid } = req.body;
         if (!taskId || !status) {
             return res.status(400).json({ success: false, message: 'taskId and status are required' });
         }
@@ -90,8 +91,9 @@ exports.updateTaskStatus = (req, res) => {
         const userAgent = req.headers['user-agent'] || '';
         const isMobile = /mobile|iphone|ipad|android/i.test(userAgent);
         const deviceTag = isMobile ? '📱 Mobile' : '💻 Desktop';
+        const sessionId = req.headers['x-client-session-id'] || bodySid || '';
 
-        const updatedTask = stateStore.updateTaskStatus(taskId, status, updatedBy, deviceTag);
+        const updatedTask = stateStore.updateTaskStatus(taskId, status, updatedBy, deviceTag, sessionId);
         res.json({ success: true, data: updatedTask });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

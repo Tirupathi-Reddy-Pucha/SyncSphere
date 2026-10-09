@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, CheckCircle2, Clock, Users, Tag, AlertCircle, Sparkles, FolderPlus } from 'lucide-react';
 
-export default function WorkspaceList({ activeUser }) {
+export default function WorkspaceList({ activeUser, clientSessionId }) {
     const [workspaces, setWorkspaces] = useState([]);
     const [selectedWs, setSelectedWs] = useState(null);
     const [tasks, setTasks] = useState([]);
@@ -59,12 +59,13 @@ export default function WorkspaceList({ activeUser }) {
         try {
             const res = await fetch('/api/workspaces', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'x-client-session-id': clientSessionId },
                 body: JSON.stringify({
                     title: newTitle,
                     description: newDesc,
                     category: newCat,
-                    author: activeUser || 'Tirupathi Reddy'
+                    author: activeUser || 'Tirupathi Reddy',
+                    clientSessionId
                 })
             });
             const json = await res.json();
@@ -87,12 +88,13 @@ export default function WorkspaceList({ activeUser }) {
         try {
             const res = await fetch('/api/workspaces/tasks', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'x-client-session-id': clientSessionId },
                 body: JSON.stringify({
                     workspaceId: selectedWs.id,
                     title: newTaskTitle,
                     priority: newTaskPriority,
-                    assignee: activeUser || 'Tirupathi Reddy'
+                    assignee: activeUser || 'Tirupathi Reddy',
+                    clientSessionId
                 })
             });
             const json = await res.json();
@@ -110,8 +112,8 @@ export default function WorkspaceList({ activeUser }) {
         try {
             const res = await fetch('/api/workspaces/tasks', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ taskId: task.id, status: nextStatus, updatedBy: activeUser })
+                headers: { 'Content-Type': 'application/json', 'x-client-session-id': clientSessionId },
+                body: JSON.stringify({ taskId: task.id, status: nextStatus, updatedBy: activeUser, clientSessionId })
             });
             const json = await res.json();
             if (json.success) {

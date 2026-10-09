@@ -9,7 +9,25 @@ export default function App() {
     const [activeTab, setActiveTab] = useState('workspaces');
     const [health, setHealth] = useState(null);
     const [activeUser, setActiveUser] = useState('Tirupathi Reddy (Project Lead)');
-    const [userEmail, setUserEmail] = useState('tirupathi@gmail.com');
+
+    // Persistent Device Session Token & Locked Email
+    const [clientSessionId] = useState(() => {
+        let sid = localStorage.getItem('syncsphere_session_id');
+        if (!sid) {
+            sid = 'session-' + Math.random().toString(36).substring(2, 10);
+            localStorage.setItem('syncsphere_session_id', sid);
+        }
+        return sid;
+    });
+
+    const [userEmail] = useState(() => {
+        let mail = localStorage.getItem('syncsphere_user_email');
+        if (!mail) {
+            mail = 'tirupathi@gmail.com';
+            localStorage.setItem('syncsphere_user_email', mail);
+        }
+        return mail;
+    });
 
     useEffect(() => {
         fetch('/health')
@@ -22,14 +40,14 @@ export default function App() {
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
             {/* Header Bar */}
-            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} activeUser={activeUser} setActiveUser={setActiveUser} userEmail={userEmail} setUserEmail={setUserEmail} />
+            <Header health={health} activeTab={activeTab} setActiveTab={setActiveTab} activeUser={activeUser} setActiveUser={setActiveUser} userEmail={userEmail} />
 
             {/* Main Workspace Canvas */}
             <main style={{ flex: 1, maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '2rem 1.5rem' }}>
-                {activeTab === 'workspaces' && <WorkspaceList activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
-                {activeTab === 'files' && <FileManager activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
-                {activeTab === 'ai' && <AiSecurityScanner activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} />}
-                {activeTab === 'telemetry' && <TelemetryDashboard userEmail={userEmail} />}
+                {activeTab === 'workspaces' && <WorkspaceList activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} clientSessionId={clientSessionId} />}
+                {activeTab === 'files' && <FileManager activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} clientSessionId={clientSessionId} />}
+                {activeTab === 'ai' && <AiSecurityScanner activeUser={userEmail ? `${activeUser} <${userEmail}>` : activeUser} clientSessionId={clientSessionId} />}
+                {activeTab === 'telemetry' && <TelemetryDashboard clientSessionId={clientSessionId} />}
             </main>
 
             {/* Footer */}

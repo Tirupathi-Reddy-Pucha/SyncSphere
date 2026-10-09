@@ -92,13 +92,14 @@ const createTask = (taskData) => {
 };
 
 const getLogs = () => state.logs;
-const addLog = (user, action, severity = 'Info') => {
+const addLog = (user, action, severity = 'Info', sessionId = '') => {
     const newLog = {
         id: uuidv4(),
         timestamp: new Date().toISOString(),
         user,
         action,
-        severity
+        severity,
+        sessionId
     };
     state.logs.unshift(newLog);
     return newLog;
@@ -117,7 +118,7 @@ const addAiCodeReview = (codeSnippet, feedback, securityScore) => {
     return review;
 };
 
-const updateTaskStatus = (taskId, status, updatedBy, deviceTag = '') => {
+const updateTaskStatus = (taskId, status, updatedBy, deviceTag = '', sessionId = '') => {
     const task = state.tasks.find(t => t.id === taskId);
     if (task) {
         task.status = status;
@@ -127,7 +128,8 @@ const updateTaskStatus = (taskId, status, updatedBy, deviceTag = '') => {
             timestamp: new Date().toISOString(),
             user: user,
             action: `Updated task "${task.title}" status to ${status}`,
-            severity: 'Info'
+            severity: 'Info',
+            sessionId
         });
     }
     return task;
