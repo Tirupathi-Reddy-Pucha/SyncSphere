@@ -69,24 +69,29 @@ graph TB
 
 ## ✨ Key Features & Capabilities
 
-### 1. 📂 Project Workspaces & Task Manager
+### 1. 🔑 Passwordless Email Gateway & Identity Session Lock
+- Passwordless email authentication gateway for multi-user cloud workspace access.
+- Permanent session-verified identity locking (`clientSessionId`), eliminating identity impersonation or unauthorized name modifications.
+
+### 2. 📂 Project Workspaces & Task Manager
 - Create and organize cloud computing project workspaces.
 - Dynamic task checklist tracker with priority tags (`High`, `Medium`, `Low`) and real-time status.
-- Member collaboration avatars and role assignments.
+- Member collaboration avatars and automated assignee attribution.
 
-### 2. 🗄️ Azure Blob Storage Asset Manager
+### 3. 🗄️ Azure Blob Storage Asset Manager
 - Direct buffer streaming to Azure Blob Storage container (`workspace-assets`).
 - Automatic MIME-type detection and direct SAS / blob URL generation.
 - Real-time file deletion and size formatting.
 
-### 3. 🛡️ AI Cloud Security Code Scanner
+### 4. 🛡️ AI Cloud Security Code Scanner
 - Heuristic static code analyzer for cloud configurations and Azure Node.js SDK snippets.
 - Audits for hardcoded secrets, unencrypted HTTP protocols, public blob container access, and permissive CORS.
 - Computes dynamic **0–100 Security Compliance Scores**.
 
-### 4. 📊 Infrastructure Telemetry & Audit Logs
+### 5. 📊 Infrastructure Telemetry & Device-Aware Audit Stream
 - Live service health indicators for Azure App Service, Blob Storage, Log Analytics, and Application Insights.
-- System & security audit event log stream with severity badges (`Success`, `Info`, `Warning`, `Error`).
+- Device-aware system & security audit event stream (`💻 Desktop` vs `📱 Mobile`) with personalized `(You)` resolution for active sessions.
+- In-memory & API-driven audit stream management with warning-level security audit tracking.
 
 ---
 
