@@ -67,8 +67,12 @@ exports.createTask = (req, res) => {
             return res.status(400).json({ success: false, message: 'Title and workspaceId are required' });
         }
 
+        const userAgent = req.headers['user-agent'] || '';
+        const isMobile = /mobile|iphone|ipad|android/i.test(userAgent);
+        const deviceTag = isMobile ? '📱 Mobile' : '💻 Desktop';
+
         const newTask = stateStore.createTask({ workspaceId, title, priority, assignee });
-        stateStore.addLog('User', `Created task "${title}" in workspace ${workspaceId}`, 'Info');
+        stateStore.addLog(assignee + ` (${deviceTag})`, `Created task "${title}" in workspace ${workspaceId}`, 'Info');
         res.status(201).json({ success: true, data: newTask });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -82,7 +86,12 @@ exports.updateTaskStatus = (req, res) => {
         if (!taskId || !status) {
             return res.status(400).json({ success: false, message: 'taskId and status are required' });
         }
-        const updatedTask = stateStore.updateTaskStatus(taskId, status, updatedBy);
+
+        const userAgent = req.headers['user-agent'] || '';
+        const isMobile = /mobile|iphone|ipad|android/i.test(userAgent);
+        const deviceTag = isMobile ? '📱 Mobile' : '💻 Desktop';
+
+        const updatedTask = stateStore.updateTaskStatus(taskId, status, updatedBy, deviceTag);
         res.json({ success: true, data: updatedTask });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

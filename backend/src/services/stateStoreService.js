@@ -117,11 +117,11 @@ const addAiCodeReview = (codeSnippet, feedback, securityScore) => {
     return review;
 };
 
-const updateTaskStatus = (taskId, status, updatedBy) => {
+const updateTaskStatus = (taskId, status, updatedBy, deviceTag = '') => {
     const task = state.tasks.find(t => t.id === taskId);
     if (task) {
         task.status = status;
-        const user = updatedBy || task.assignee || 'User';
+        const user = (updatedBy || task.assignee || 'User') + (deviceTag ? ` (${deviceTag})` : '');
         state.logs.unshift({
             id: uuidv4(),
             timestamp: new Date().toISOString(),
