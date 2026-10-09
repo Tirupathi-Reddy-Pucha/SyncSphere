@@ -115,7 +115,7 @@ export default function WorkspaceList({ activeUser }) {
             });
             const json = await res.json();
             if (json.success) {
-                setTasks(tasks.map(t => t.id === task.id ? { ...t, status: nextStatus, assignee: activeUser || t.assignee } : t));
+                setTasks(tasks.map(t => t.id === task.id ? { ...t, status: nextStatus } : t));
             }
         } catch (err) {
             console.error('Error toggling task status:', err);
