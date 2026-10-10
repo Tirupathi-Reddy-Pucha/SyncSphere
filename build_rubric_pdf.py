@@ -3,7 +3,7 @@ import sys
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether, HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether, HRFlowable, Image
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfgen import canvas
@@ -35,12 +35,12 @@ class NumberedCanvas(canvas.Canvas):
             self.setStrokeColor(colors.HexColor("#e2e8f0"))
             self.setLineWidth(0.5)
             self.line(54, 11 * 72 - 36, 8.5 * 72 - 54, 11 * 72 - 36)
-            self.drawString(54, 11 * 72 - 30, "SyncSphere — Comprehensive 20/20 Evaluation Rubric Report")
+            self.drawString(54, 11 * 72 - 30, "SyncSphere — Project Technical Evaluation Report")
 
         # Footer page number
         page_text = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(8.5 * 72 - 54, 36, page_text)
-        self.drawString(54, 36, "Confidential & Proprietary — SyncSphere Academic Evaluation Proof")
+        self.drawString(54, 36, "SyncSphere — Cloud Architecture & Implementation Proof")
         self.setStrokeColor(colors.HexColor("#e2e8f0"))
         self.setLineWidth(0.5)
         self.line(54, 48, 8.5 * 72 - 54, 48)
@@ -61,7 +61,6 @@ def build_pdf():
     PRIMARY = colors.HexColor("#0f172a")      # Slate 900
     SECONDARY = colors.HexColor("#0284c7")    # Sky 600
     ACCENT_GREEN = colors.HexColor("#059669") # Emerald 600
-    ACCENT_AMBER = colors.HexColor("#d97706") # Amber 600
     TEXT_DARK = colors.HexColor("#1e293b")    # Slate 800
     TEXT_MUTED = colors.HexColor("#475569")   # Slate 600
     BG_LIGHT = colors.HexColor("#f8fafc")     # Slate 50
@@ -70,23 +69,18 @@ def build_pdf():
     # Typography Styles
     style_title = ParagraphStyle(
         'DocTitle', parent=styles['Normal'],
-        fontName='Helvetica-Bold', fontSize=24, leading=28,
+        fontName='Helvetica-Bold', fontSize=22, leading=26,
         textColor=PRIMARY, spaceAfter=6
     )
     style_subtitle = ParagraphStyle(
         'DocSubTitle', parent=styles['Normal'],
         fontName='Helvetica-Bold', fontSize=12, leading=16,
-        textColor=SECONDARY, spaceAfter=15
+        textColor=SECONDARY, spaceAfter=14
     )
     style_h1 = ParagraphStyle(
         'Heading1_Custom', parent=styles['Normal'],
-        fontName='Helvetica-Bold', fontSize=15, leading=19,
+        fontName='Helvetica-Bold', fontSize=14, leading=18,
         textColor=PRIMARY, spaceBefore=14, spaceAfter=8
-    )
-    style_h2 = ParagraphStyle(
-        'Heading2_Custom', parent=styles['Normal'],
-        fontName='Helvetica-Bold', fontSize=12, leading=16,
-        textColor=SECONDARY, spaceBefore=10, spaceAfter=4
     )
     style_body = ParagraphStyle(
         'Body_Custom', parent=styles['Normal'],
@@ -113,19 +107,12 @@ def build_pdf():
         fontName='Helvetica-Bold', fontSize=9, leading=12,
         textColor=PRIMARY
     )
-    style_code = ParagraphStyle(
-        'CodeStyle', parent=styles['Normal'],
-        fontName='Courier', fontSize=8.5, leading=11,
-        textColor=colors.HexColor("#0f172a"), backColor=BG_LIGHT,
-        borderColor=BORDER_COLOR, borderWidth=0.5, borderPadding=4,
-        spaceAfter=6
-    )
 
     story = []
 
     # Title & Subtitle Header Block
-    story.append(Paragraph("SyncSphere — 20/20 Evaluation Rubric Defense & Proof Report", style_title))
-    story.append(Paragraph("Comprehensive Criteria-by-Criteria Technical Evaluation & Project Evidence", style_subtitle))
+    story.append(Paragraph("SyncSphere — Technical Evaluation & Rubric Proof Report", style_title))
+    story.append(Paragraph("Cloud-Native Collaborative Workspace with Automated AI Asset Security", style_subtitle))
     story.append(HRFlowable(width="100%", thickness=1.5, color=SECONDARY, spaceAfter=12))
 
     # Metadata Box Table
@@ -139,12 +126,12 @@ def build_pdf():
             Paragraph("<font color='#0284c7'><u>https://github.com/Tirupathi-Reddy-Pucha/SyncSphere</u></font>", style_table_cell)
         ],
         [
-            Paragraph("<b>Azure App Service / Subscription:</b>", style_table_cell_bold),
-            Paragraph("app-syncsphere-api-2026 / Azure for Students (a76241a6-5571-4c87-9829-a08e0ef360b9)", style_table_cell)
+            Paragraph("<b>Azure Resource Group / Sub:</b>", style_table_cell_bold),
+            Paragraph("rg-syncsphere-eastus2 / Azure for Students (a76241a6-5571-4c87-9829-a08e0ef360b9)", style_table_cell)
         ],
         [
-            Paragraph("<b>Final Claimed Score:</b>", style_table_cell_bold),
-            Paragraph("<b><font color='#059669'>20 / 20 Marks (100% Full Score)</font></b>", style_table_cell)
+            Paragraph("<b>Deployment Status:</b>", style_table_cell_bold),
+            Paragraph("<b><font color='#059669'>100% Deployed & Active on Microsoft Azure</font></b>", style_table_cell)
         ]
     ]
     meta_table = Table(meta_data, colWidths=[170, 334])
@@ -157,97 +144,86 @@ def build_pdf():
     story.append(meta_table)
     story.append(Spacer(1, 14))
 
-    # Rubric Executive Score Table
-    story.append(Paragraph("<b>1. Executive Evaluation Rubric Scorecard</b>", style_h1))
+    # Rubric Criteria Table
+    story.append(Paragraph("<b>1. Evaluation Criteria & Implementation Mapping</b>", style_h1))
     
     rubric_table_data = [
         [
             Paragraph("S.No", style_table_header),
             Paragraph("Evaluation Criteria", style_table_header),
-            Paragraph("Max Marks", style_table_header),
-            Paragraph("Score", style_table_header),
-            Paragraph("Key Technical Proof & Implementation Evidence", style_table_header)
+            Paragraph("Marks", style_table_header),
+            Paragraph("What to Evaluate / Implementation Details", style_table_header)
         ],
         [
             Paragraph("1", style_table_cell_bold),
             Paragraph("Project Objective & Requirements", style_table_cell_bold),
-            Paragraph("2", style_table_cell),
-            Paragraph("<b>2/2</b>", style_table_cell_bold),
-            Paragraph("Clear problem statement addressing cloud collaboration & automated AI asset security scanning.", style_table_cell)
+            Paragraph("2", style_table_cell_bold),
+            Paragraph("Clear problem statement, objectives, requirements, and relevance of cloud asset security.", style_table_cell)
         ],
         [
             Paragraph("2", style_table_cell_bold),
             Paragraph("System Architecture & Design", style_table_cell_bold),
-            Paragraph("4", style_table_cell),
-            Paragraph("<b>4/4</b>", style_table_cell_bold),
-            Paragraph("Decoupled 3-tier microservice architecture (React SPA + Node.js API + Azure Storage).", style_table_cell)
+            Paragraph("4", style_table_cell_bold),
+            Paragraph("Appropriate technology selection, 3-tier design, scalability, and hybrid zero-downtime storage.", style_table_cell)
         ],
         [
             Paragraph("3", style_table_cell_bold),
             Paragraph("Implementation & Functionality", style_table_cell_bold),
-            Paragraph("4", style_table_cell),
-            Paragraph("<b>4/4</b>", style_table_cell_bold),
-            Paragraph("Live working app on Azure with Kanban task board, asset manager & AI security scanner.", style_table_cell)
+            Paragraph("4", style_table_cell_bold),
+            Paragraph("Working application, Kanban board, cloud asset manager, and automated AI security scanner.", style_table_cell)
         ],
         [
             Paragraph("4", style_table_cell_bold),
             Paragraph("Security & Access Control", style_table_cell_bold),
-            Paragraph("2", style_table_cell),
-            Paragraph("<b>2/2</b>", style_table_cell_bold),
-            Paragraph("Passwordless email login, locked session identity (clientSessionId), encrypted Azure settings.", style_table_cell)
+            Paragraph("2", style_table_cell_bold),
+            Paragraph("Passwordless authentication, locked session identity (clientSessionId), and HTTPS encryption.", style_table_cell)
         ],
         [
             Paragraph("5", style_table_cell_bold),
             Paragraph("Database & Data Management", style_table_cell_bold),
-            Paragraph("2", style_table_cell),
-            Paragraph("<b>2/2</b>", style_table_cell_bold),
-            Paragraph("Azure Storage buffer streaming (workspace-assets), CRUD operations, instant blob deletion.", style_table_cell)
+            Paragraph("2", style_table_cell_bold),
+            Paragraph("Azure Blob Storage selection, memory buffer streaming, CRUD asset operations, and deletion.", style_table_cell)
         ],
         [
             Paragraph("6", style_table_cell_bold),
             Paragraph("Deployment & DevOps", style_table_cell_bold),
-            Paragraph("2", style_table_cell),
-            Paragraph("<b>2/2</b>", style_table_cell_bold),
-            Paragraph("Automated Python deployment pipeline (create_webapp.py) & GitHub version control.", style_table_cell)
+            Paragraph("2", style_table_cell_bold),
+            Paragraph("Deployment process, Python automation (create_webapp.py), configuration management, and GitHub repo.", style_table_cell)
         ],
         [
             Paragraph("7", style_table_cell_bold),
-            Paragraph("Monitoring & Performance", style_table_cell_bold),
-            Paragraph("1", style_table_cell),
-            Paragraph("<b>1/1</b>", style_table_cell_bold),
-            Paragraph("Public health API (/api/telemetry/health) & device-aware audit stream (Desktop vs Mobile).", style_table_cell)
+            Paragraph("Monitoring, Performance & Optimization", style_table_cell_bold),
+            Paragraph("1", style_table_cell_bold),
+            Paragraph("Monitoring, public health API (/api/telemetry/health), and device-aware audit stream.", style_table_cell)
         ],
         [
             Paragraph("8", style_table_cell_bold),
             Paragraph("Documentation & Presentation", style_table_cell_bold),
-            Paragraph("2", style_table_cell),
-            Paragraph("<b>2/2</b>", style_table_cell_bold),
-            Paragraph("Executive PDF implementation report, PowerPoint presentation deck & Azure Portal links.", style_table_cell)
+            Paragraph("2", style_table_cell_bold),
+            Paragraph("Architecture diagram, documentation, PowerPoint presentation deck, and direct Azure Portal links.", style_table_cell)
         ],
         [
             Paragraph("9", style_table_cell_bold),
             Paragraph("Innovation & Problem Solving", style_table_cell_bold),
-            Paragraph("1", style_table_cell),
-            Paragraph("<b>1/1</b>", style_table_cell_bold),
-            Paragraph("Automated heuristic AI security scanner auditing code/configs for secrets & CORS risks upon upload.", style_table_cell)
+            Paragraph("1", style_table_cell_bold),
+            Paragraph("Creativity, automated heuristic AI code auditor, and zero-downtime storage fallback engine.", style_table_cell)
         ],
         [
             Paragraph("<b>TOTAL</b>", style_table_cell_bold),
-            Paragraph("<b>Comprehensive Score</b>", style_table_cell_bold),
+            Paragraph("<b>Evaluation Total</b>", style_table_cell_bold),
             Paragraph("<b>20</b>", style_table_cell_bold),
-            Paragraph("<b><font color='#059669'>20/20</font></b>", style_table_cell_bold),
             Paragraph("<b>100% Fully Compliant & Verified Live on Azure</b>", style_table_cell_bold)
         ]
     ]
 
-    r_table = Table(rubric_table_data, colWidths=[30, 130, 45, 45, 254])
+    r_table = Table(rubric_table_data, colWidths=[30, 140, 45, 289])
     r_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), PRIMARY),
         ('BOX', (0,0), (-1,-1), 1, PRIMARY),
         ('INNERGRID', (0,0), (-1,-1), 0.5, BORDER_COLOR),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('PADDING', (0,0), (-1,-1), 4),
-        ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#ecfdf5")),
+        ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#f1f5f9")),
     ]))
     story.append(r_table)
     story.append(Spacer(1, 14))
@@ -255,11 +231,11 @@ def build_pdf():
     # Page Break for Detailed Section-by-Section Analysis
     story.append(PageBreak())
 
-    # Section-by-Section Detailed Evidence
+    # Section-by-Section Detailed Evidence (Clean Headings without marks)
     sections_data = [
         {
             "num": "1",
-            "title": "Criteria 1: Project Objective & Requirements (2 / 2 Marks)",
+            "title": "1. Project Objective & Requirements",
             "sub": "Clear problem statement, objectives, requirements, and relevance of the project",
             "content": [
                 "<b>Problem Statement:</b> Modern cloud development teams face severe security vulnerabilities when team members upload unvetted code, configuration files, or environment templates into cloud storage. Hardcoded API keys, unencrypted HTTP URLs, wildcard CORS headers, and public container access frequently slip into production, exposing cloud assets to data breaches.",
@@ -273,8 +249,9 @@ def build_pdf():
         },
         {
             "num": "2",
-            "title": "Criteria 2: System Architecture & Design (4 / 4 Marks)",
+            "title": "2. System Architecture & Design",
             "sub": "Appropriate technology selection, architecture design, scalability, reliability, and logical implementation",
+            "has_diagram": True,
             "content": [
                 "<b>3-Tier Microservices Architecture Design:</b>",
                 "• <b>Presentation Tier:</b> React 18 Single Page Application built with Vite, styled with TailwindCSS, and utilizing Lucide icons for responsive UI components.",
@@ -287,7 +264,7 @@ def build_pdf():
         },
         {
             "num": "3",
-            "title": "Criteria 3: Implementation & Functionality (4 / 4 Marks)",
+            "title": "3. Implementation & Functionality",
             "sub": "Working application, correct integration of technologies/services, and successful execution of major features",
             "content": [
                 "<b>Live App Verification:</b> Fully deployed and accessible 24/7 at https://app-syncsphere-api-2026.azurewebsites.net/.",
@@ -300,7 +277,7 @@ def build_pdf():
         },
         {
             "num": "4",
-            "title": "Criteria 4: Security & Access Control (2 / 2 Marks)",
+            "title": "4. Security & Access Control",
             "sub": "Authentication, authorization, access control, data protection, and secure configuration",
             "content": [
                 "<b>Passwordless Authentication Gateway:</b> LoginScreen.jsx validates user email address and generates a unique clientSessionId stored in localStorage.",
@@ -312,7 +289,7 @@ def build_pdf():
         },
         {
             "num": "5",
-            "title": "Criteria 5: Database & Data Management (2 / 2 Marks)",
+            "title": "5. Database & Data Management",
             "sub": "Appropriate database/storage selection, data organization, CRUD operations, and data management",
             "content": [
                 "<b>Storage Architecture:</b> Integrated Azure Blob Storage (@azure/storage-blob SDK) for cloud files and stateStoreService.js for workspace data state.",
@@ -326,7 +303,7 @@ def build_pdf():
         },
         {
             "num": "6",
-            "title": "Criteria 6: Deployment & DevOps (2 / 2 Marks)",
+            "title": "6. Deployment & DevOps",
             "sub": "Deployment process, automation/CI-CD where applicable, configuration management, and reproducibility",
             "content": [
                 "<b>Automated Deployment Pipeline:</b> Custom Python deployment engine (create_webapp.py) that automatically packages React production dist bundles and Node.js backend source files into a deployment archive.",
@@ -336,7 +313,7 @@ def build_pdf():
         },
         {
             "num": "7",
-            "title": "Criteria 7: Monitoring, Performance & Optimization (1 / 1 Mark)",
+            "title": "7. Monitoring, Performance & Optimization",
             "sub": "Monitoring, logging, performance analysis, resource utilization, and optimization",
             "content": [
                 "<b>Public Telemetry Health Endpoint:</b> Public REST endpoint GET /api/telemetry/health returning JSON system status, uptime, and active service diagnostics.",
@@ -346,7 +323,7 @@ def build_pdf():
         },
         {
             "num": "8",
-            "title": "Criteria 8: Documentation & Presentation (2 / 2 Marks)",
+            "title": "8. Documentation & Presentation",
             "sub": "Architecture diagram, documentation, screenshots demonstration, and explanation of technical decisions",
             "content": [
                 "<b>Executive PDF Implementation Report:</b> Comprehensive PDF project plan (Project_Collaboration_Workspace_Implementation_Plan.pdf).",
@@ -356,7 +333,7 @@ def build_pdf():
         },
         {
             "num": "9",
-            "title": "Criteria 9: Innovation & Problem Solving (1 / 1 Mark)",
+            "title": "9. Innovation & Problem Solving",
             "sub": "Creativity, additional features, technical challenges, and problem-solving approach",
             "content": [
                 "<b>Automated AI Cloud Security Scanner:</b> Custom heuristic analyzer (aiController.js) that automatically intercepts uploaded code/configs, scans for regex secrets/CORS risks, and returns visual diagnostic cards.",
@@ -365,11 +342,18 @@ def build_pdf():
         }
     ]
 
+    img_path = r"c:\Users\tirup\OneDrive\Desktop\cloud_project\architecture_diagram.png"
+
     for sec in sections_data:
         story.append(Paragraph(sec["title"], style_h1))
         story.append(Paragraph(f"<i>Sub-Criteria: {sec['sub']}</i>", style_body))
         story.append(HRFlowable(width="100%", thickness=0.8, color=SECONDARY, spaceAfter=6))
-        
+
+        if sec.get("has_diagram") and os.path.exists(img_path):
+            story.append(Spacer(1, 4))
+            story.append(Image(img_path, width=504, height=315))
+            story.append(Spacer(1, 6))
+
         for item in sec["content"]:
             if item.startswith("•") or item.startswith("<b>Problem") or item.startswith("<b>3-Tier") or item.startswith("<b>Live") or item.startswith("<b>Passwordless") or item.startswith("<b>Storage") or item.startswith("<b>Automated") or item.startswith("<b>Public") or item.startswith("<b>Executive"):
                 story.append(Paragraph(item, style_body))
@@ -377,30 +361,30 @@ def build_pdf():
                 story.append(Paragraph(item, style_bullet))
         story.append(Spacer(1, 8))
 
-    # Final Defense Sign-off Box
+    # Final Technical Summary Box (Clean signoff)
     story.append(Spacer(1, 10))
     story.append(HRFlowable(width="100%", thickness=1.5, color=PRIMARY, spaceAfter=10))
     
     signoff_data = [
         [
-            Paragraph("<b>EVALUATION VERIFICATION & FINAL RECOMMENDATION:</b>", style_table_cell_bold),
-            Paragraph("<b><font color='#059669'>FULL MARKS (20 / 20) AWARDED</font></b>", style_table_cell_bold)
+            Paragraph("<b>EVALUATION VERIFICATION & TECHNICAL SUMMARY:</b>", style_table_cell_bold),
+            Paragraph("<b><font color='#059669'>100% PRODUCTION READY</font></b>", style_table_cell_bold)
         ],
         [
-            Paragraph("Project SyncSphere satisfies every criterion with production-grade working proof on Microsoft Azure, clear documentation, complete security implementations, and innovative AI security scanning.", style_table_cell),
+            Paragraph("SyncSphere satisfies all evaluation requirements with production-grade working proof on Microsoft Azure, complete security implementation, and innovative automated AI security scanning.", style_table_cell),
             Paragraph("<b>Verified Live:</b> 2026-10-10", style_table_cell)
         ]
     ]
     signoff_table = Table(signoff_data, colWidths=[360, 144])
     signoff_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#f0fdf4")),
-        ('BOX', (0,0), (-1,-1), 1, ACCENT_GREEN),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#f8fafc")),
+        ('BOX', (0,0), (-1,-1), 1, BORDER_COLOR),
         ('PADDING', (0,0), (-1,-1), 6),
     ]))
     story.append(signoff_table)
 
     doc.build(story, canvasmaker=NumberedCanvas)
-    print(f"SUCCESS: Comprehensive Rubric PDF saved to {pdf_path}")
+    print(f"SUCCESS: Clean Rubric PDF saved to {pdf_path}")
 
 if __name__ == "__main__":
     build_pdf()
