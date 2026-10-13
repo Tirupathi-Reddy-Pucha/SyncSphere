@@ -1,9 +1,9 @@
 const stateStore = require('../services/stateStoreService');
 
 // Get all workspaces
-exports.getAllWorkspaces = (req, res) => {
+exports.getAllWorkspaces = async (req, res) => {
     try {
-        const workspaces = stateStore.getWorkspaces();
+        const workspaces = await stateStore.getWorkspaces();
         res.json({ success: true, count: workspaces.length, data: workspaces });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -11,13 +11,13 @@ exports.getAllWorkspaces = (req, res) => {
 };
 
 // Get single workspace by ID
-exports.getWorkspaceById = (req, res) => {
+exports.getWorkspaceById = async (req, res) => {
     try {
-        const workspace = stateStore.getWorkspaceById(req.params.id);
+        const workspace = await stateStore.getWorkspaceById(req.params.id);
         if (!workspace) {
             return res.status(404).json({ success: false, message: 'Workspace not found' });
         }
-        const tasks = stateStore.getTasks(req.params.id);
+        const tasks = await stateStore.getTasks(req.params.id);
         res.json({ success: true, data: { ...workspace, tasks } });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -25,14 +25,13 @@ exports.getWorkspaceById = (req, res) => {
 };
 
 // Create new workspace
-exports.createWorkspace = (req, res) => {
+exports.createWorkspace = async (req, res) => {
     try {
         const { title, description, category, author } = req.body;
         if (!title) {
             return res.status(400).json({ success: false, message: 'Title is required' });
         }
-
-        const newWorkspace = stateStore.createWorkspace({
+        const newWorkspace = await stateStore.createWorkspace({
             title,
             description,
             category,
@@ -41,7 +40,6 @@ exports.createWorkspace = (req, res) => {
                 { id: 'usr-1', name: author || 'Tirupathi Reddy', role: 'Project Owner', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }
             ]
         });
-
         res.status(201).json({ success: true, data: newWorkspace });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -49,10 +47,10 @@ exports.createWorkspace = (req, res) => {
 };
 
 // Get tasks
-exports.getTasks = (req, res) => {
+exports.getTasks = async (req, res) => {
     try {
         const { workspaceId } = req.query;
-        const tasks = stateStore.getTasks(workspaceId);
+        const tasks = await stateStore.getTasks(workspaceId);
         res.json({ success: true, count: tasks.length, data: tasks });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -60,20 +58,18 @@ exports.getTasks = (req, res) => {
 };
 
 // Create task
-exports.createTask = (req, res) => {
+exports.createTask = async (req, res) => {
     try {
         const { workspaceId, title, priority, assignee, clientSessionId: bodySid } = req.body;
         if (!title || !workspaceId) {
             return res.status(400).json({ success: false, message: 'Title and workspaceId are required' });
         }
-
         const userAgent = req.headers['user-agent'] || '';
         const isMobile = /mobile|iphone|ipad|android/i.test(userAgent);
         const deviceTag = isMobile ? '📱 Mobile' : '💻 Desktop';
         const sessionId = req.headers['x-client-session-id'] || bodySid || '';
-
-        const newTask = stateStore.createTask({ workspaceId, title, priority, assignee });
-        stateStore.addLog(assignee + ` (${deviceTag})`, `Created task "${title}" in workspace ${workspaceId}`, 'Info', sessionId);
+        const newTask = await stateStore.createTask({ workspaceId, title, priority, assignee });
+        await stateStore.addLog(assignee + ` (${deviceTag})`, `Created task "${title}" in workspace ${workspaceId}`, 'Info', sessionId);
         res.status(201).json({ success: true, data: newTask });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -81,19 +77,17 @@ exports.createTask = (req, res) => {
 };
 
 // Update task status
-exports.updateTaskStatus = (req, res) => {
+exports.updateTaskStatus = async (req, res) => {
     try {
         const { taskId, status, updatedBy, clientSessionId: bodySid } = req.body;
         if (!taskId || !status) {
             return res.status(400).json({ success: false, message: 'taskId and status are required' });
         }
-
         const userAgent = req.headers['user-agent'] || '';
         const isMobile = /mobile|iphone|ipad|android/i.test(userAgent);
         const deviceTag = isMobile ? '📱 Mobile' : '💻 Desktop';
         const sessionId = req.headers['x-client-session-id'] || bodySid || '';
-
-        const updatedTask = stateStore.updateTaskStatus(taskId, status, updatedBy, deviceTag, sessionId);
+        const updatedTask = await stateStore.updateTaskStatus(taskId, status, updatedBy, deviceTag, sessionId);
         res.json({ success: true, data: updatedTask });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -101,15 +95,14 @@ exports.updateTaskStatus = (req, res) => {
 };
 
 // Log identity change event
-exports.logIdentityChange = (req, res) => {
+exports.logIdentityChange = async (req, res) => {
     try {
         const { oldEmail, newEmail, clientSessionId: bodySid } = req.body;
         const userAgent = req.headers['user-agent'] || '';
         const isMobile = /mobile|iphone|ipad|android/i.test(userAgent);
         const deviceTag = isMobile ? '📱 Mobile' : '💻 Desktop';
         const sessionId = req.headers['x-client-session-id'] || bodySid || '';
-
-        stateStore.addLog(
+        await stateStore.addLog(
             `${oldEmail || 'User'} (${deviceTag})`,
             `Changed device account email identity from "${oldEmail || 'default'}" to "${newEmail}"`,
             'Warning',
@@ -122,9 +115,9 @@ exports.logIdentityChange = (req, res) => {
 };
 
 // Get System Audit Logs
-exports.getLogs = (req, res) => {
+exports.getLogs = async (req, res) => {
     try {
-        const logs = stateStore.getLogs();
+        const logs = await stateStore.getLogs();
         res.json({ success: true, count: logs.length, data: logs });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -132,9 +125,9 @@ exports.getLogs = (req, res) => {
 };
 
 // Clear System Audit Logs
-exports.clearLogs = (req, res) => {
+exports.clearLogs = async (req, res) => {
     try {
-        const logs = stateStore.clearLogs();
+        const logs = await stateStore.clearLogs();
         res.json({ success: true, data: logs, message: 'Logs reset successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
