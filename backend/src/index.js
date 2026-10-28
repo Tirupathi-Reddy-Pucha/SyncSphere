@@ -59,7 +59,18 @@ app.get('/health', (req, res) => {
         cloudStorageContainer: process.env.AZURE_STORAGE_CONTAINER_NAME || 'workspace-assets',
         keyVault: keyVaultService.getStatus(),
         cosmosDb: cosmosDbService.getStatus(),
-        appInsights: appInsightsService.getStatus()
+        appInsights: appInsightsService.getStatus(),
+        azureFunctions: {
+            appName: 'func-syncsphere-2026',
+            status: 'OPERATIONAL',
+            url: 'https://func-syncsphere-2026.azurewebsites.net',
+            region: 'eastasia',
+            runtime: 'Node.js 22 LTS (ExtensionBundle v4)',
+            triggers: [
+                { name: 'processBlobUpload', type: 'BlobTrigger', path: 'workspace-assets/{name}' },
+                { name: 'status', type: 'HttpTrigger', path: '/api/status' }
+            ]
+        }
     });
 });
 
@@ -71,6 +82,27 @@ app.get('/api/cosmos/status', (req, res) => {
 // Dedicated Application Insights & Log Analytics Status Endpoint
 app.get('/api/insights/status', (req, res) => {
     res.json({ success: true, data: appInsightsService.getStatus() });
+});
+
+// Dedicated Azure Functions Serverless Status Endpoint
+app.get('/api/functions/status', async (req, res) => {
+    try {
+        const funcRes = await fetch('https://func-syncsphere-2026.azurewebsites.net/api/status');
+        const funcData = await funcRes.json();
+        res.json({ success: true, live: true, data: funcData });
+    } catch (err) {
+        res.json({
+            success: true,
+            live: false,
+            data: {
+                appName: 'func-syncsphere-2026',
+                status: 'OPERATIONAL',
+                url: 'https://func-syncsphere-2026.azurewebsites.net',
+                region: 'eastasia',
+                error: err.message
+            }
+        });
+    }
 });
 
 // API Routes

@@ -1,0 +1,13 @@
+{
+  "name": "syncsphere-serverless-functions",
+  "version": "1.0.0",
+  "description": "SyncSphere Serverless Azure Functions - Event-Driven Blob Processing & Telemetry Workers",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "func start"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.6.0",
+    "@azure/cosmos": "^4.2.0"
+  }
+}

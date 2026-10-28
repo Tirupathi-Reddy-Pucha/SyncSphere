@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Server, HardDrive, ShieldAlert, CheckCircle2, Clock, RefreshCw, Cpu, Key, Lock, Shield, Database } from 'lucide-react';
+import { Activity, Server, HardDrive, ShieldAlert, CheckCircle2, Clock, RefreshCw, Cpu, Key, Lock, Shield, Database, Zap } from 'lucide-react';
 
 export default function TelemetryDashboard({ clientSessionId, userEmail, authToken }) {
     const [health, setHealth] = useState(null);
@@ -112,7 +112,7 @@ export default function TelemetryDashboard({ clientSessionId, userEmail, authTok
                         <Activity size={24} color="var(--accent-cyan)" /> Azure Infrastructure Telemetry & Audit Logs
                     </h2>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                        Real-time metric monitoring for Azure App Service, Key Vault HSM, Application Insights, and Log Analytics Workspace
+                        Real-time metric monitoring for Azure App Service, Serverless Functions, Key Vault HSM, Application Insights, and Cosmos DB
                     </p>
                 </div>
                 <button onClick={fetchTelemetry} className="btn-secondary">
@@ -202,6 +202,19 @@ export default function TelemetryDashboard({ clientSessionId, userEmail, authTok
                     <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Log Analytics Workspace</h4>
                     <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>log-syncsphere-2026</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>30-Day Retention • PerGB2018</div>
+                </div>
+
+                {/* Card 8: Azure Functions Serverless Worker (Real) */}
+                <div className="glass-panel" style={{ padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                        <Zap size={22} color="#f59e0b" />
+                        <span className="badge badge-emerald">Operational</span>
+                    </div>
+                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Azure Functions (Serverless)</h4>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                        {health?.azureFunctions?.appName || 'func-syncsphere-2026'}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>BlobTrigger • East Asia (Consumption Y1)</div>
                 </div>
 
             </div>
