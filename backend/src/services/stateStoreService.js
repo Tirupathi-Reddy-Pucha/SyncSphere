@@ -270,6 +270,13 @@ async function updateTaskStatus(taskId, status, updatedBy, deviceTag = '', sessi
 
 // ─── Audit Log Methods ───────────────────────────────────────────────────────
 async function getLogs() {
+    try {
+        const cosmosLogs = await cosmosDbService.getLogs();
+        if (cosmosLogs && cosmosLogs.length > 0) {
+            return cosmosLogs;
+        }
+    } catch (_) { }
+
     await ensureTablesExist();
     const client = getTableClient(TABLES.LOGS);
     if (!client) return fallbackState.logs;
@@ -314,6 +321,19 @@ async function addLog(user, action, severity = 'Info', param4 = '', param5 = '')
         finalUser = `${finalUser} (${deviceTag})`;
     }
 
+    const logTimestamp = new Date().toISOString();
+
+    // 1. Persist to Azure Cosmos DB NoSQL Container
+    cosmosDbService.addLog({
+        id,
+        user: finalUser,
+        action,
+        severity,
+        sessionId: sessionId || '',
+        timestamp: logTimestamp
+    }).catch(() => { });
+
+    // 2. Persist to Azure Table Storage
     const entity = {
         partitionKey: 'logs',
         rowKey: id,
@@ -321,7 +341,7 @@ async function addLog(user, action, severity = 'Info', param4 = '', param5 = '')
         action,
         severity,
         sessionId: sessionId || '',
-        logTimestamp: new Date().toISOString()
+        logTimestamp
     };
     const client = getTableClient(TABLES.LOGS);
     if (client) {
@@ -336,6 +356,8 @@ async function addLog(user, action, severity = 'Info', param4 = '', param5 = '')
 }
 
 async function clearLogs() {
+    cosmosDbService.clearLogs().catch(() => { });
+
     const client = getTableClient(TABLES.LOGS);
     if (client) {
         try {

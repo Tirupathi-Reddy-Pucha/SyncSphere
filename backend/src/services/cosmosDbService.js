@@ -160,6 +160,38 @@ class CosmosDbService {
                     await taskContainer.items.create(tsk);
                 }
             }
+
+            // Seed initial auditLogs if empty
+            const logContainer = this.containers[CONTAINERS.LOGS];
+            if (logContainer) {
+                const { resources: logRes } = await logContainer.items.query('SELECT VALUE COUNT(1) FROM c').fetchAll();
+                if ((logRes[0] || 0) === 0) {
+                    const seedLogs = [
+                        {
+                            id: `log-seed-1`,
+                            user: 'admin@cloud.com',
+                            action: 'Azure Key Vault & Cosmos DB NoSQL cluster initialized',
+                            level: 'Success',
+                            severity: 'Success',
+                            sessionId: 'sys-init',
+                            timestamp: new Date(Date.now() - 3600000).toISOString()
+                        },
+                        {
+                            id: `log-seed-2`,
+                            user: 'cb.sc.u4cse23568@cb.students.amrita.edu (💻 Desktop)',
+                            action: 'Session authenticated via Cryptographic JWT Token (Lead Architect)',
+                            level: 'Info',
+                            severity: 'Info',
+                            sessionId: 'sys-init',
+                            timestamp: new Date().toISOString()
+                        }
+                    ];
+                    for (const l of seedLogs) {
+                        await logContainer.items.create(l);
+                    }
+                    console.log('✅ Azure Cosmos DB: Seeded initial auditLogs');
+                }
+            }
         } catch (err) {
             console.warn('⚠️ Cosmos DB seeding notice:', err.message);
         }
@@ -282,6 +314,54 @@ class CosmosDbService {
         } catch (err) {
             return null;
         }
+    }
+
+    // ─── Audit Logs ────────────────────────────────────────────────────────────
+    async addLog(logData) {
+        await this.init();
+        if (!this.initialized || !this.containers[CONTAINERS.LOGS]) return null;
+        try {
+            const logItem = {
+                id: logData.id || `log-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+                user: logData.user,
+                action: logData.action,
+                level: logData.severity || logData.level || 'Info',
+                severity: logData.severity || logData.level || 'Info',
+                sessionId: logData.sessionId || '',
+                timestamp: logData.timestamp || new Date().toISOString()
+            };
+            const { resource } = await this.containers[CONTAINERS.LOGS].items.create(logItem);
+            return resource;
+        } catch (err) {
+            console.warn('⚠️ Cosmos DB addLog error:', err.message);
+            return null;
+        }
+    }
+
+    async getLogs(limit = 50) {
+        await this.init();
+        if (!this.initialized || !this.containers[CONTAINERS.LOGS]) return null;
+        try {
+            const querySpec = {
+                query: 'SELECT TOP @limit * FROM c ORDER BY c.timestamp DESC',
+                parameters: [{ name: '@limit', value: limit }]
+            };
+            const { resources } = await this.containers[CONTAINERS.LOGS].items.query(querySpec).fetchAll();
+            return resources;
+        } catch (err) {
+            return null;
+        }
+    }
+
+    async clearLogs() {
+        await this.init();
+        if (!this.initialized || !this.containers[CONTAINERS.LOGS]) return;
+        try {
+            const { resources } = await this.containers[CONTAINERS.LOGS].items.query('SELECT c.id, c.level FROM c').fetchAll();
+            for (const item of resources) {
+                await this.containers[CONTAINERS.LOGS].item(item.id, item.level).delete().catch(() => { });
+            }
+        } catch (_) { }
     }
 
     // ─── Health / Status ────────────────────────────────────────────────────────
