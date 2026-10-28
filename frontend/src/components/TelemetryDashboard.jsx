@@ -61,23 +61,24 @@ export default function TelemetryDashboard({ clientSessionId, userEmail, authTok
     const formatLogUser = (log) => {
         if (!log || !log.user) return 'System';
 
-        const logUser = log.user;
+        const rawUser = log.user;
 
         // Extract device tag if present (e.g. 💻 Desktop or 📱 Mobile)
-        const deviceMatch = logUser.match(/\((💻 Desktop|📱 Mobile)\)/);
+        const deviceMatch = rawUser.match(/\((💻 Desktop|📱 Mobile)\)/);
         const deviceTag = deviceMatch ? deviceMatch[1] : '';
 
-        // Check if log's sessionId matches this client's persistent session
-        const isSelf = clientSessionId && log.sessionId && log.sessionId === clientSessionId;
+        // Extract email or username without device tag or brackets
+        let email = rawUser.replace(/\s*\((💻 Desktop|📱 Mobile)\)\s*/g, '').trim();
+        const bracketMatch = email.match(/<([^>]+)>/);
+        if (bracketMatch) email = bracketMatch[1];
 
-        if (isSelf) {
-            return `${deviceTag ? deviceTag + ' ' : ''}(You)`;
-        } else {
-            // Extract email or fallback to display name cleanly
-            const emailMatch = logUser.match(/<([^>]+)>/);
-            const email = emailMatch ? emailMatch[1] : logUser.replace(/\((💻 Desktop|📱 Mobile)\)/, '').trim();
-            return `${email}${deviceTag ? ' (' + deviceTag + ')' : ''}`;
+        // If email is generic or this action belongs to the active session, display the logged-in user email
+        const isSelf = clientSessionId && log.sessionId && log.sessionId === clientSessionId;
+        if ((!email || email === 'User' || email === 'You' || isSelf) && userEmail) {
+            email = userEmail;
         }
+
+        return `${email}${deviceTag ? ' (' + deviceTag + ')' : ''}`;
     };
 
     const handleClearLogs = async () => {
