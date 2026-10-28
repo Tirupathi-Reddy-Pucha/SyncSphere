@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, CheckCircle2, Clock, Users, Tag, AlertCircle, Sparkles, FolderPlus } from 'lucide-react';
 
-export default function WorkspaceList({ activeUser, clientSessionId }) {
+export default function WorkspaceList({ activeUser, clientSessionId, authToken }) {
     const [workspaces, setWorkspaces] = useState([]);
     const [selectedWs, setSelectedWs] = useState(null);
     const [tasks, setTasks] = useState([]);
@@ -17,6 +17,8 @@ export default function WorkspaceList({ activeUser, clientSessionId }) {
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [newTaskPriority, setNewTaskPriority] = useState('High');
 
+    const token = authToken || localStorage.getItem('syncsphere_auth_token') || '';
+
     useEffect(() => {
         fetchWorkspaces();
     }, []);
@@ -24,7 +26,9 @@ export default function WorkspaceList({ activeUser, clientSessionId }) {
     const fetchWorkspaces = async () => {
         try {
             setLoading(true);
-            const res = await fetch('/api/workspaces');
+            const res = await fetch('/api/workspaces', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
             const json = await res.json();
             if (json.success) {
                 setWorkspaces(json.data);
@@ -42,7 +46,9 @@ export default function WorkspaceList({ activeUser, clientSessionId }) {
     const selectWorkspace = async (ws) => {
         setSelectedWs(ws);
         try {
-            const res = await fetch(`/api/workspaces/tasks?workspaceId=${ws.id}`);
+            const res = await fetch(`/api/workspaces/tasks?workspaceId=${ws.id}`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
             const json = await res.json();
             if (json.success) {
                 setTasks(json.data);
@@ -59,7 +65,11 @@ export default function WorkspaceList({ activeUser, clientSessionId }) {
         try {
             const res = await fetch('/api/workspaces', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-client-session-id': clientSessionId },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-client-session-id': clientSessionId,
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({
                     title: newTitle,
                     description: newDesc,
@@ -88,7 +98,11 @@ export default function WorkspaceList({ activeUser, clientSessionId }) {
         try {
             const res = await fetch('/api/workspaces/tasks', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-client-session-id': clientSessionId },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-client-session-id': clientSessionId,
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({
                     workspaceId: selectedWs.id,
                     title: newTaskTitle,
@@ -112,7 +126,11 @@ export default function WorkspaceList({ activeUser, clientSessionId }) {
         try {
             const res = await fetch('/api/workspaces/tasks', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'x-client-session-id': clientSessionId },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-client-session-id': clientSessionId,
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({ taskId: task.id, status: nextStatus, updatedBy: activeUser, clientSessionId })
             });
             const json = await res.json();

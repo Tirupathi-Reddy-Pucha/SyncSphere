@@ -108,3 +108,19 @@ exports.deleteFile = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+// Serve fallback asset buffer directly
+exports.getAssetFile = async (req, res) => {
+    try {
+        const { blobName } = req.params;
+        const asset = azureBlobService.getFallbackBlob(blobName);
+        if (!asset) {
+            return res.status(404).json({ success: false, message: 'Asset not found or expired from fallback cache' });
+        }
+        res.setHeader('Content-Type', asset.contentType || 'application/octet-stream');
+        res.setHeader('Content-Disposition', `inline; filename="${blobName}"`);
+        res.send(asset.buffer);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

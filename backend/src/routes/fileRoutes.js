@@ -11,6 +11,7 @@ const upload = multer({
 
 router.post('/upload', upload.single('file'), fileController.uploadFile);
 router.get('/', fileController.listFiles);
+router.get('/assets/:blobName', fileController.getAssetFile);
 router.delete('/:blobName', fileController.deleteFile);
 
 module.exports = router;

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Server, HardDrive, ShieldAlert, CheckCircle2, Clock, RefreshCw, Cpu } from 'lucide-react';
+import { Activity, Server, HardDrive, ShieldAlert, CheckCircle2, Clock, RefreshCw, Cpu, Key, Lock, Shield } from 'lucide-react';
 
-export default function TelemetryDashboard({ clientSessionId }) {
+export default function TelemetryDashboard({ clientSessionId, userEmail, authToken }) {
     const [health, setHealth] = useState(null);
     const [logs, setLogs] = useState([]);
+    const [vaultData, setVaultData] = useState(null);
+    const [syncingVault, setSyncingVault] = useState(false);
     const [loading, setLoading] = useState(true);
+
+    const token = authToken || localStorage.getItem('syncsphere_auth_token') || '';
 
     useEffect(() => {
         fetchTelemetry();
@@ -14,20 +18,43 @@ export default function TelemetryDashboard({ clientSessionId }) {
         try {
             setLoading(true);
 
-            const [hRes, lRes] = await Promise.all([
+            const [hRes, lRes, vRes] = await Promise.all([
                 fetch('/health'),
-                fetch('/api/workspaces/logs')
+                fetch('/api/workspaces/logs', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                }),
+                fetch('/api/vault/secrets', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                }).catch(() => null)
             ]);
 
             const hJson = await hRes.json();
             const lJson = await lRes.json();
+            const vJson = vRes ? await vRes.json() : null;
 
             if (hJson) setHealth(hJson);
             if (lJson.success) setLogs(lJson.data);
+            if (vJson?.success) setVaultData(vJson);
         } catch (err) {
             console.error('Telemetry fetch error:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSyncVault = async () => {
+        try {
+            setSyncingVault(true);
+            const res = await fetch('/api/vault/sync', {
+                method: 'POST',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            await res.json();
+            await fetchTelemetry();
+        } catch (err) {
+            console.error('Error syncing Key Vault:', err);
+        } finally {
+            setSyncingVault(false);
         }
     };
 
@@ -84,7 +111,7 @@ export default function TelemetryDashboard({ clientSessionId }) {
                         <Activity size={24} color="var(--accent-cyan)" /> Azure Infrastructure Telemetry & Audit Logs
                     </h2>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                        Real-time metric monitoring for Azure App Service, Application Insights, and Log Analytics Workspace
+                        Real-time metric monitoring for Azure App Service, Key Vault HSM, Application Insights, and Log Analytics Workspace
                     </p>
                 </div>
                 <button onClick={fetchTelemetry} className="btn-secondary">
@@ -93,7 +120,7 @@ export default function TelemetryDashboard({ clientSessionId }) {
             </div>
 
             {/* Health Metric Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
 
                 {/* Card 1: API Gateway App Service */}
                 <div className="glass-panel" style={{ padding: '1.25rem' }}>
@@ -106,7 +133,22 @@ export default function TelemetryDashboard({ clientSessionId }) {
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Azure Region: eastasia (App Service F1)</div>
                 </div>
 
-                {/* Card 2: Blob Container Storage */}
+                {/* Card 2: Azure Key Vault */}
+                <div className="glass-panel" style={{ padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                        <Key size={22} color="var(--accent-amber)" />
+                        <span className="badge badge-emerald">Encrypted HSM</span>
+                    </div>
+                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Azure Key Vault</h4>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                        {health?.keyVault?.vaultName || 'kv-syncsphere-2026'}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                        FIPS 140-2 Level 2 • {health?.keyVault?.status === 'ACTIVE' ? 'Managed Identity' : 'Zero-Trust HSM'}
+                    </div>
+                </div>
+
+                {/* Card 3: Blob Container Storage */}
                 <div className="glass-panel" style={{ padding: '1.25rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                         <HardDrive size={22} color="var(--accent-blue)" />
@@ -117,7 +159,7 @@ export default function TelemetryDashboard({ clientSessionId }) {
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Container: workspace-assets</div>
                 </div>
 
-                {/* Card 3: Log Analytics Workspace */}
+                {/* Card 4: Log Analytics Workspace */}
                 <div className="glass-panel" style={{ padding: '1.25rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                         <Activity size={22} color="var(--accent-purple)" />
@@ -128,7 +170,7 @@ export default function TelemetryDashboard({ clientSessionId }) {
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Region: eastus2</div>
                 </div>
 
-                {/* Card 4: Application Insights */}
+                {/* Card 5: Application Insights */}
                 <div className="glass-panel" style={{ padding: '1.25rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                         <Cpu size={22} color="var(--accent-emerald)" />
@@ -139,6 +181,61 @@ export default function TelemetryDashboard({ clientSessionId }) {
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Telemetry: Performance & APM</div>
                 </div>
 
+            </div>
+
+            {/* Azure Key Vault Zero-Trust Secret Manager Widget */}
+            <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '8px', background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Lock size={20} color="var(--accent-amber)" />
+                        </div>
+                        <div>
+                            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                Azure Key Vault Secret Store
+                                <span className="badge badge-emerald" style={{ fontSize: '0.7rem' }}>FIPS 140-2 Level 2</span>
+                            </h3>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                                Zero-Trust Credential Isolation • DefaultAzureCredential • RBAC Authorization
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                            onClick={handleSyncVault}
+                            disabled={syncingVault}
+                            className="btn-secondary"
+                            style={{ padding: '0.35rem 0.85rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                        >
+                            <RefreshCw size={14} className={syncingVault ? 'spin' : ''} />
+                            {syncingVault ? 'Syncing...' : 'Sync Key Vault'}
+                        </button>
+                    </div>
+                </div>
+
+                {vaultData?.data ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '0.75rem' }}>
+                        {vaultData.data.map(sec => (
+                            <div key={sec.key} style={{ padding: '0.85rem 1rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '10px', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', fontFamily: 'monospace' }}>
+                                        {sec.key}
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.2rem', fontFamily: 'monospace' }}>
+                                        Value: <span style={{ color: 'var(--accent-cyan)' }}>{sec.maskedValue}</span>
+                                    </div>
+                                </div>
+                                <span className="badge badge-cyan" style={{ fontSize: '0.7rem' }}>
+                                    {sec.status}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+                        Key Vault secrets managed and protected via Hardware Security Module (HSM).
+                    </div>
+                )}
             </div>
 
             {/* Live System Logs Stream */}

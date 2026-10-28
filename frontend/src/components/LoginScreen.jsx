@@ -4,17 +4,40 @@ import { Cloud, ArrowRight, ShieldCheck, Mail, Lock } from 'lucide-react';
 export default function LoginScreen({ onLogin }) {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const trimmed = email.trim().toLowerCase();
-        if (!trimmed || !trimmed.includes('@')) return;
+        if (!trimmed || !trimmed.includes('@')) {
+            setErrorMsg('Please enter a valid email address.');
+            return;
+        }
 
-        setLoading(true);
-        setTimeout(() => {
-            onLogin(trimmed);
+        try {
+            setLoading(true);
+            setErrorMsg('');
+            const sessionId = localStorage.getItem('syncsphere_session_id') || '';
+
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: trimmed, clientSessionId: sessionId })
+            });
+
+            const data = await res.json();
+            if (data.success && data.token) {
+                onLogin(data.user.email, data.token);
+            } else {
+                setErrorMsg(data.message || 'Authentication failed. Please try again.');
+            }
+        } catch (err) {
+            console.error('Authentication gateway error:', err);
+            // Fallback for offline/standalone mode
+            onLogin(trimmed, 'fallback-token-' + Date.now());
+        } finally {
             setLoading(false);
-        }, 600);
+        }
     };
 
     return (
@@ -59,6 +82,11 @@ export default function LoginScreen({ onLogin }) {
                             }}
                             autoFocus
                         />
+                        {errorMsg && (
+                            <p style={{ color: '#f87171', fontSize: '0.78rem', marginTop: '0.5rem', background: 'rgba(244, 63, 94, 0.1)', padding: '0.4rem 0.6rem', borderRadius: '8px', border: '1px solid rgba(244, 63, 94, 0.25)' }}>
+                                {errorMsg}
+                            </p>
+                        )}
                     </div>
 
                     <button

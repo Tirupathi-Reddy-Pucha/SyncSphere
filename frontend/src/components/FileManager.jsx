@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, HardDrive, FileText, Trash2, ExternalLink, RefreshCw, FileCheck, CheckCircle } from 'lucide-react';
 
-export default function FileManager() {
+export default function FileManager({ activeUser, clientSessionId, authToken }) {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
@@ -14,7 +14,10 @@ export default function FileManager() {
     const fetchFiles = async () => {
         try {
             setLoading(true);
-            const res = await fetch('/api/files');
+            const token = authToken || localStorage.getItem('syncsphere_auth_token') || '';
+            const res = await fetch('/api/files', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
             const json = await res.json();
             if (json.success) {
                 setFiles(json.data);
@@ -33,8 +36,9 @@ export default function FileManager() {
         const formData = new FormData();
         formData.append('file', selectedFile);
 
-        const userEmail = localStorage.getItem('syncsphere_user_email') || '';
-        const sessionId = localStorage.getItem('syncsphere_session_id') || '';
+        const userEmail = activeUser || localStorage.getItem('syncsphere_user_email') || '';
+        const sessionId = clientSessionId || localStorage.getItem('syncsphere_session_id') || '';
+        const token = authToken || localStorage.getItem('syncsphere_auth_token') || '';
 
         try {
             setUploading(true);
@@ -43,7 +47,8 @@ export default function FileManager() {
                 method: 'POST',
                 headers: {
                     'x-user-email': userEmail,
-                    'x-client-session-id': sessionId
+                    'x-client-session-id': sessionId,
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 },
                 body: formData
             });
@@ -68,15 +73,17 @@ export default function FileManager() {
     const handleDeleteFile = async (blobName) => {
         if (!window.confirm(`Delete blob "${blobName}" from Azure Storage?`)) return;
 
-        const userEmail = localStorage.getItem('syncsphere_user_email') || '';
-        const sessionId = localStorage.getItem('syncsphere_session_id') || '';
+        const userEmail = activeUser || localStorage.getItem('syncsphere_user_email') || '';
+        const sessionId = clientSessionId || localStorage.getItem('syncsphere_session_id') || '';
+        const token = authToken || localStorage.getItem('syncsphere_auth_token') || '';
 
         try {
             const res = await fetch(`/api/files/${encodeURIComponent(blobName)}`, {
                 method: 'DELETE',
                 headers: {
                     'x-user-email': userEmail,
-                    'x-client-session-id': sessionId
+                    'x-client-session-id': sessionId,
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 }
             });
             const json = await res.json();

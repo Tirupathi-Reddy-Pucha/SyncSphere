@@ -6,9 +6,16 @@
 const { TableServiceClient, TableClient, odata } = require('@azure/data-tables');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const keyVaultService = require('./keyVaultService');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-const CONN_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING || '';
+function getConnectionString() {
+    let conn = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    if (!conn && keyVaultService.cache.has('AZURE-STORAGE-CONNECTION-STRING')) {
+        conn = keyVaultService.cache.get('AZURE-STORAGE-CONNECTION-STRING')?.value;
+    }
+    return conn || '';
+}
 
 // Table names
 const TABLES = {
@@ -53,19 +60,34 @@ let tableServiceClient;
 let initialized = false;
 
 function getTableServiceClient() {
-    if (!CONN_STRING || CONN_STRING.trim() === '') return null;
+    const conn = getConnectionString();
+    if (!conn || conn.trim() === '') return null;
     try {
-        return TableServiceClient.fromConnectionString(CONN_STRING);
+        return TableServiceClient.fromConnectionString(conn);
     } catch (err) {
         console.warn('⚠️ Azure Table Storage: Could not init client:', err.message);
         return null;
     }
 }
 
+const tableClients = new Map();
+
+function defaultWorkspaceMembers(author = 'Tirupathi Reddy') {
+    return [
+        { id: 'usr-1', name: author, role: 'Lead Architect', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' },
+        { id: 'usr-2', name: 'Cloud SecOps Lead', role: 'Security Reviewer', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100' },
+        { id: 'usr-3', name: 'Azure DevOps Specialist', role: 'CI/CD Engineer', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100' }
+    ];
+}
+
 function getTableClient(tableName) {
-    if (!CONN_STRING || CONN_STRING.trim() === '') return null;
+    const conn = getConnectionString();
+    if (!conn || conn.trim() === '') return null;
+    if (tableClients.has(tableName)) return tableClients.get(tableName);
     try {
-        return TableClient.fromConnectionString(CONN_STRING, tableName);
+        const client = TableClient.fromConnectionString(conn, tableName);
+        tableClients.set(tableName, client);
+        return client;
     } catch (err) {
         return null;
     }
@@ -127,7 +149,7 @@ async function getWorkspaces() {
                 status: entity.status,
                 author: entity.author,
                 createdAt: entity.createdAt,
-                members: []
+                members: defaultWorkspaceMembers(entity.author)
             });
         }
         return results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -140,6 +162,7 @@ async function getWorkspaces() {
 async function createWorkspace(data) {
     await ensureTablesExist();
     const id = `ws-${Date.now()}`;
+    const author = data.author || 'User';
     const entity = {
         partitionKey: 'workspaces',
         rowKey: id,
@@ -147,13 +170,16 @@ async function createWorkspace(data) {
         description: data.description || '',
         category: data.category || 'Cloud Engineering',
         status: 'In Progress',
-        author: data.author || 'User',
+        author,
         createdAt: new Date().toISOString()
     };
     const client = getTableClient(TABLES.WORKSPACES);
     if (client) await client.createEntity(entity).catch(err => console.warn(err.message));
-    await addLog(data.author || 'User', `Created workspace: "${entity.title}"`, 'Info');
-    return { id, ...entity, members: [] };
+    await addLog(author, `Created workspace: "${entity.title}"`, 'Info');
+    const members = defaultWorkspaceMembers(author);
+    const newWs = { id, ...entity, members };
+    fallbackState.workspaces.unshift(newWs);
+    return newWs;
 }
 
 // ─── Task Methods ────────────────────────────────────────────────────────────
@@ -243,13 +269,31 @@ async function getLogs() {
     }
 }
 
-async function addLog(user, action, severity = 'Info', sessionId = '') {
+async function addLog(user, action, severity = 'Info', param4 = '', param5 = '') {
     await ensureTablesExist();
     const id = uuidv4();
+
+    // Dynamically resolve parameter formats:
+    // Call format A: addLog(user, action, severity, sessionId) -> param4 = sessionId
+    // Call format B: addLog(user, action, severity, deviceTag, sessionId) -> param4 = deviceTag, param5 = sessionId
+    let sessionId = '';
+    let deviceTag = '';
+    if (param5 !== '' && param5 !== undefined) {
+        deviceTag = param4 || '';
+        sessionId = param5 || '';
+    } else {
+        sessionId = param4 || '';
+    }
+
+    let finalUser = user || 'User';
+    if (deviceTag && !finalUser.includes(deviceTag)) {
+        finalUser = `${finalUser} (${deviceTag})`;
+    }
+
     const entity = {
         partitionKey: 'logs',
         rowKey: id,
-        user,
+        user: finalUser,
         action,
         severity,
         sessionId: sessionId || '',
@@ -259,12 +303,12 @@ async function addLog(user, action, severity = 'Info', sessionId = '') {
     if (client) {
         await client.createEntity(entity).catch(err => {
             console.warn('⚠️ Log write error:', err.message);
-            fallbackState.logs.unshift({ id, timestamp: entity.logTimestamp, user, action, severity, sessionId });
+            fallbackState.logs.unshift({ id, timestamp: entity.logTimestamp, user: finalUser, action, severity, sessionId });
         });
     } else {
-        fallbackState.logs.unshift({ id, timestamp: entity.logTimestamp, user, action, severity, sessionId });
+        fallbackState.logs.unshift({ id, timestamp: entity.logTimestamp, user: finalUser, action, severity, sessionId });
     }
-    return { id, timestamp: entity.logTimestamp, user, action, severity, sessionId };
+    return { id, timestamp: entity.logTimestamp, user: finalUser, action, severity, sessionId };
 }
 
 async function clearLogs() {
@@ -324,15 +368,52 @@ async function addAiCodeReview(codeSnippet, feedback, securityScore) {
 
 // ─── In-Memory Fallback ──────────────────────────────────────────────────────
 const fallbackState = {
-    workspaces: SEED_WORKSPACES.map(ws => ({ id: ws.rowKey, title: ws.title, description: ws.description, category: ws.category, status: ws.status, author: ws.author, createdAt: ws.createdAt, members: [] })),
+    workspaces: SEED_WORKSPACES.map(ws => ({
+        id: ws.rowKey,
+        title: ws.title,
+        description: ws.description,
+        category: ws.category,
+        status: ws.status,
+        author: ws.author,
+        createdAt: ws.createdAt,
+        members: defaultWorkspaceMembers(ws.author)
+    })),
     tasks: SEED_TASKS.map(t => ({ id: t.rowKey, workspaceId: t.workspaceId, title: t.title, priority: t.priority, status: t.status, assignee: t.assignee })),
     logs: [],
     aiCodeReviews: []
 };
 
-// Legacy sync wrapper for getWorkspaceById (safe fallback)
-function getWorkspaceById(id) {
-    return fallbackState.workspaces.find(w => w.id === id) || null;
+// Azure Table Storage-backed workspace lookup with in-memory fallback
+async function getWorkspaceById(id) {
+    await ensureTablesExist();
+    const client = getTableClient(TABLES.WORKSPACES);
+    if (client) {
+        try {
+            const entity = await client.getEntity('workspaces', id);
+            if (entity) {
+                return {
+                    id: entity.rowKey,
+                    title: entity.title,
+                    description: entity.description,
+                    category: entity.category,
+                    status: entity.status,
+                    author: entity.author,
+                    createdAt: entity.createdAt,
+                    members: defaultWorkspaceMembers(entity.author)
+                };
+            }
+        } catch (err) {
+            // Not found in table or table query failed, fall back to memory
+        }
+    }
+    const mem = fallbackState.workspaces.find(w => w.id === id);
+    if (mem) {
+        return {
+            ...mem,
+            members: mem.members && mem.members.length > 0 ? mem.members : defaultWorkspaceMembers(mem.author)
+        };
+    }
+    return null;
 }
 
 module.exports = {

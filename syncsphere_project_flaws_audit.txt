@@ -1,0 +1,303 @@
+================================================================================
+SYNCHSPHERE - COMPREHENSIVE PROJECT FLAW & VULNERABILITY AUDIT REPORT
+Project: SyncSphere (Azure Cloud Collaboration Workspace)
+Repository: Tirupathi-Reddy-Pucha/SyncSphere
+Date of Audit: October 28, 2026
+Target Evaluation Rubric: Cloud Computing Course Project (20 Marks)
+================================================================================
+
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY
+2. CATEGORY 1: CRITICAL SECURITY & AUTHENTICATION FLAWS
+3. CATEGORY 2: FUNCTIONAL BUGS & APPLICATION LOGIC ERRORS
+4. CATEGORY 3: CLOUD INFRASTRUCTURE & ARCHITECTURAL DISCREPANCIES
+5. CATEGORY 4: DEVOPS, CI/CD & REPOSITORY INTEGRITY FLAWS
+6. CATEGORY 5: ACADEMIC RUBRIC DEFENSE VULNERABILITIES (MARKS AT RISK)
+7. PRIORITIZED ACTION & REMEDIATION CHECKLIST
+--------------------------------------------------------------------------------
+
+
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
+While SyncSphere demonstrates a clean glassmorphism UI, a well-structured multi-
+tier design, and broad Azure SDK usage, a comprehensive code audit reveals 
+significant security vulnerabilities, functional runtime bugs, infrastructure 
+bottlenecks, and misleading feature claims. 
+
+Key high-impact concerns include:
+- Complete lack of real backend authentication (mock email login without verification)
+- A publicly accessible endpoint that permits arbitrary secret & environment variable overwrites
+- Missing async/await keywords breaking the AI Security Scanner UI and review history
+- Single workspace lookup (GET /api/workspaces/:id) failing for all cloud-persisted records
+- Misleading representation of 5 basic regular expressions as "Azure AI Cloud Security Scanner"
+- App Service F1 tier quota exhaustion (HTTP 403 / QuotaExceeded shutdown)
+
+
+================================================================================
+2. CATEGORY 1: CRITICAL SECURITY & AUTHENTICATION FLAWS
+================================================================================
+
+[FLAW 1.1] PLACEBO / FAUX AUTHENTICATION GATEWAY
+- Location: frontend/src/components/LoginScreen.jsx (lines 8-18)
+- Description: The application claims to have a "Passwordless Email Gateway & 
+  Identity Session Lock". In reality, the login handler only checks if the input 
+  contains an '@' character, waits 600ms, and writes the email string directly to 
+  localStorage.
+- Risk: Anyone can enter any email (e.g., admin@azure.com, faculty@amrita.edu) 
+  without OTP, password, magic link, or OAuth verification. There is zero true 
+  identity protection.
+- Dead Code: `jsonwebtoken` is installed in backend/package.json and `JWT_SECRET` 
+  is defined in backend/.env, but JWT is NEVER imported, signed, or validated 
+  anywhere in the codebase.
+
+[FLAW 1.2] CLIENT IDENTITY SPOOFING VIA UNTRUSTED HEADERS
+- Location: 
+  - backend/src/controllers/fileController.js (line 13)
+  - backend/src/controllers/workspaceController.js (lines 70, 89)
+  - backend/src/controllers/vaultController.js (lines 58-59)
+- Description: The server trusts client-provided headers (`x-user-email` and 
+  `x-client-session-id`) for user attribution and audit logging.
+- Risk: Anyone using Postman, curl, or browser dev tools can send arbitrary 
+  headers to spoof any user's email or session ID, falsifying audit logs and 
+  impersonating administrators.
+
+[FLAW 1.3] UNPROTECTED REMOTE ENVIRONMENT & SECRET OVERWRITE ENDPOINT
+- Location: 
+  - backend/src/routes/vaultRoutes.js (line 7)
+  - backend/src/controllers/vaultController.js (lines 55-84)
+- Description: `POST /api/vault/set` accepts `{ secretName, secretValue }` with 
+  no authentication, no authorization, and no rate limiting.
+- Risk: Any anonymous user on the public internet can call this endpoint to 
+  overwrite `process.env` keys (e.g., AZURE_STORAGE_CONNECTION_STRING) and 
+  modify Azure Key Vault secrets, allowing complete application hijack or denial 
+  of service.
+
+[FLAW 1.4] PUBLIC ANONYMOUS BLOB CONTAINER CONFIGURATION
+- Location: backend/src/services/azureBlobService.js (line 48)
+  Code: `await containerClient.createIfNotExists({ access: 'blob' });`
+- Description: The container is created with `{ access: 'blob' }`, enabling 
+  public anonymous read access for all files.
+- Risk: Anyone who obtains or guesses an asset URL can download confidential files 
+  without authentication.
+- Contradiction: This directly violates the rule enforced in the project's own 
+  security scanner (aiController.js line 25), which flags container public access 
+  as a security risk. In addition, modern Azure Storage accounts disable anonymous 
+  blob access by default, which can cause runtime errors in strict environments.
+
+[FLAW 1.5] WILDCARD PERMISSIVE CORS ON EXPRESS SERVER
+- Location: backend/src/index.js (line 18)
+  Code: `app.use(cors());`
+- Description: The API enables unrestricted wildcard CORS (`*`).
+- Risk: Any external website can execute cross-origin requests against the API 
+  using the visitor's network context.
+- Contradiction: SyncSphere's own scanner rule (aiController.js lines 21-23) 
+  deducts 15 points for wildcard CORS, meaning the project fails its own check.
+
+[FLAW 1.6] COMMITTED SECRETS & HARDCODED SUBSCRIPTION IDS
+- Location: 
+  - backend/.env: `JWT_SECRET=SyncSphere2026_CloudComputing_SuperSecureJwtSecret_Key!`
+  - create_webapp.py (line 4): `sub_id = "a76241a6-5571-4c87-9829-a08e0ef360b9"`
+- Risk: Exposing subscription IDs and secret keys in repo files violates cloud 
+  security compliance standards.
+
+
+================================================================================
+3. CATEGORY 2: FUNCTIONAL BUGS & APPLICATION LOGIC ERRORS
+================================================================================
+
+[FLAW 2.1] MISSING AWAIT IN AI CONTROLLER BREAKS SCANNER UI
+- Location: backend/src/controllers/aiController.js (line 48)
+  Code: `const reviewRecord = stateStore.addAiCodeReview(codeSnippet, scanResult.feedback, scanResult.score);`
+- Description: `addAiCodeReview` in stateStoreService.js is an `async` function. 
+  Because it is not awaited, `reviewRecord` is a pending Promise. Express serializes 
+  pending Promises as `{}`.
+- Consequence in UI: In frontend/src/components/AiSecurityScanner.jsx:
+  - `result.securityScore` is `undefined`, causing the score meter to display `/ 100` with no number.
+  - `result.feedback` is `undefined`, leaving the diagnostic output blank.
+
+[FLAW 2.2] SYNCHRONOUS GETREVIEWS FAILS TO AWAIT TABLE STORAGE
+- Location: backend/src/controllers/aiController.js (lines 63-70)
+  Code: 
+  `exports.getReviews = (req, res) => {`
+  `    const reviews = stateStore.getAiCodeReviews();`
+  `    res.json({ success: true, count: reviews.length, data: reviews });`
+  `};`
+- Description: `stateStore.getAiCodeReviews()` is an `async` function returning a 
+  Promise. Since `getReviews` is synchronous and lacks `await`, `reviews.length` is 
+  `undefined`, and the endpoint returns an empty object `{}` instead of the review list.
+
+[FLAW 2.3] BROKEN WORKSPACE BY ID LOOKUP (404 ON CLOUD WORKSPACES)
+- Location: 
+  - backend/src/controllers/workspaceController.js (line 16)
+  - backend/src/services/stateStoreService.js (line 343)
+- Description: `getWorkspaceById(id)` only queries the in-memory `fallbackState.workspaces` 
+  array. It NEVER queries Azure Table Storage (`syncsphereWorkspaces`).
+- Consequence: Any workspace created and stored in Azure Table Storage returns 
+  `404 Workspace not found` when accessed via `GET /api/workspaces/:id`.
+
+[FLAW 2.4] PARAMETER ORDER MISMATCH IN AUDIT LOGGING BREAKS "(YOU)" BADGE
+- Location: 
+  - backend/src/controllers/fileController.js (lines 33, 41, 50, 96)
+  - backend/src/controllers/vaultController.js (line 68)
+  - backend/src/services/stateStoreService.js (line 255)
+- Description: Controllers pass 5 arguments:
+  `stateStore.addLog(user, message, severity, deviceTag, sessionId);`
+  However, `addLog` in stateStoreService.js is declared with only 4 parameters:
+  `async function addLog(user, action, severity = 'Info', sessionId = '')`
+- Consequence: The 4th argument (`deviceTag` such as `'💻 Desktop'`) is stored as 
+  the `sessionId`. The real 5th argument (`sessionId`) is discarded. Because of this, 
+  frontend/src/components/TelemetryDashboard.jsx line 62 never matches 
+  `log.sessionId === clientSessionId`, and file uploads never receive the `(You)` badge.
+
+[FLAW 2.5] NON-EXISTENT FALLBACK ASSET ROUTE & UPLOAD DATA LOSS
+- Location: backend/src/services/azureBlobService.js (lines 68-75)
+- Description: When Azure Blob direct upload fails, it generates:
+  `url: https://app-syncsphere-api-2026.azurewebsites.net/api/files/assets/${encodeURIComponent(blobName)}`
+- Consequence:
+  1. The Express route `/api/files/assets/:blobName` does not exist anywhere.
+  2. The file buffer is never saved to disk or memory; it is discarded.
+  3. Clicking on fallback links results in a 404 error and uploaded files are lost.
+
+[FLAW 2.6] EMPTY WORKSPACE MEMBER AVATARS
+- Location: 
+  - frontend/src/components/WorkspaceList.jsx (lines 179-187)
+  - backend/src/services/stateStoreService.js (line 139)
+- Description: WorkspaceList maps over `ws.members` to render member avatars. 
+  However, `getWorkspaces()` from Table Storage hardcodes `members: []` for all 
+  returned entities. As a result, member avatars never appear for any persisted workspace.
+
+
+================================================================================
+4. CATEGORY 3: CLOUD INFRASTRUCTURE & ARCHITECTURAL DISCREPANCIES
+================================================================================
+
+[FLAW 3.1] MISLEADING "AZURE AI" MARKETING VS. 5 REGEX PATTERNS
+- Location: backend/src/controllers/aiController.js (lines 4-37)
+- Description: Documentation and presentation slides heavily highlight:
+  - "Azure AI Security Code Scanner"
+  - "Azure Serverless AI Workflow"
+  - "AI Heuristic Engine"
+- The Reality: There is zero Azure OpenAI, zero Cognitive Services, and zero Machine 
+  Learning. It consists purely of 5 simple JavaScript regex checks. In an academic 
+  defense, evaluators will criticize this as deceptive marketing rather than genuine 
+  cloud AI integration.
+
+[FLAW 3.2] INACCURATE KEY VAULT HSM FIPS CLAIMS
+- Location: backend/src/services/keyVaultService.js (line 192)
+  Code: `encryption: 'Hardware Security Module (HSM) FIPS 140-2 Level 2'`
+- Description: Standard Azure Key Vaults are software-protected (FIPS 140-2 Level 1). 
+  FIPS 140-2 Level 2 requires a Managed HSM or Premium tier vault, which is not 
+  provisioned on this Azure for Students account. Hardcoding this claim in telemetry 
+  endpoints is factually inaccurate.
+
+[FLAW 3.3] FREE TIER CPU QUOTA EXHAUSTION (APP CRASHES TO HTTP 403)
+- Evidence: status_report.txt:
+  `STATE: QuotaExceeded`
+  `USAGE_STATE: Exceeded`
+- Description: Azure App Service Free Tier (F1) provides only 60 CPU minutes per day. 
+  Once exhausted, Azure shuts down the application until the next daily cycle, 
+  returning HTTP 403. Claiming "24/7 high availability" on an F1 plan is an operational 
+  flaw that can cause failure during live evaluation.
+
+[FLAW 3.4] CROSS-REGION LATENCY PENALTY (EAST ASIA VS. EAST US 2)
+- App Service Web App: Region `eastasia` (Hong Kong)
+- Storage Account, Key Vault, Log Analytics: Region `eastus2` (Virginia, USA)
+- Description: Every database query, blob listing, or log write traverses the Pacific 
+  Ocean, adding an avoidable 200–300ms round-trip latency penalty to every single request. 
+  Production cloud architecture requires co-locating compute and data in the same region.
+
+[FLAW 3.5] INEFFICIENT TABLE CLIENT RE-INSTANTIATION
+- Location: backend/src/services/stateStoreService.js (line 73)
+- Description: `TableClient.fromConnectionString(...)` is instantiated inside every 
+  individual CRUD invocation rather than maintaining reused client singletons.
+
+
+================================================================================
+5. CATEGORY 4: DEVOPS, CI/CD & REPOSITORY INTEGRITY FLAWS
+================================================================================
+
+[FLAW 4.1] GITHUB ACTIONS PATH MISMATCH BREAKS STATIC FRONTEND SERVING
+- Location: .github/workflows/deploy-to-azure.yml (lines 39-44)
+  Code:
+  `mkdir -p deploy`
+  `cp -r frontend/dist deploy/frontend`
+- Description: This copies the built assets into `deploy/frontend/`. However, 
+  backend/src/index.js line 47 searches for `path.join(__dirname, '../frontend/dist')`.
+- Consequence: When deployed via this GitHub Action, Express fails to locate index.html, 
+  breaking SPA static routing.
+
+[FLAW 4.2] CRITICAL BACKEND FILES UNTRACKED IN GIT
+- Evidence from `git status`:
+  - `backend/src/controllers/vaultController.js` (untracked)
+  - `backend/src/routes/vaultRoutes.js` (untracked)
+  - `backend/src/services/keyVaultService.js` (untracked)
+  - `sample_security_test_files/secure_azure_key_vault_secrets.js` (untracked)
+- Consequence: If an evaluator or colleague clones the repository from GitHub, 
+  all Azure Key Vault routes and services will be missing, causing server boot failure.
+
+[FLAW 4.3] ZERO AUTOMATED TESTS
+- Description: There are no unit tests, integration tests, or end-to-end tests 
+  anywhere in the repository. Neither backend nor frontend package.json defines an 
+  `npm test` script.
+
+[FLAW 4.4] LACK OF INPUT VALIDATION & RATE LIMITING
+- Description: No API endpoints use validation libraries (e.g., Zod, Joi). No rate 
+  limiting is applied to file uploads or secret updates, leaving the server vulnerable 
+  to buffer flooding and denial of service.
+
+
+================================================================================
+6. CATEGORY 5: ACADEMIC RUBRIC DEFENSE VULNERABILITIES (MARKS AT RISK)
+================================================================================
+
+Target Rubric Total: 20 Marks
+
+| Criteria No. & Name                    | Max | At Risk | Vulnerability Justification |
+|----------------------------------------|:---:|:-------:|-----------------------------|
+| 1. Project Objective & Requirements    |  2  | 1.5-2.0 | Solid problem statement, but claims "passwordless verified identity" without real implementation. |
+| 2. System Architecture & Design        |  4  | 2.5-3.0 | Cross-region latency (eastasia vs eastus2), F1 quota throttling, no client pooling. |
+| 3. Implementation & Functionality      |  4  | 2.5-3.0 | Missing await breaks AI Scanner UI; getWorkspaceById broken; fallback storage URLs 404. |
+| 4. Security & Access Control           |  2  | 0.5-1.0 | Unauthenticated /api/vault/set; client-spoofed headers; public blob container; mock login. |
+| 5. Database & Data Management          |  2  | 1.5-2.0 | Table storage works, but members array empty; getWorkspaceById bypassed. |
+| 6. Deployment & DevOps                 |  2  | 1.0-1.5 | GitHub Action path mismatch; critical vault files untracked in git; no automated testing. |
+| 7. Monitoring & Performance            |  1  | 0.5-1.0 | F1 QuotaExceeded downtime; fake HSM telemetry string; addLog sessionId param bug. |
+| 8. Documentation & Presentation        |  2  | 2.0/2.0 | Excellent PDF, PPT, and Mermaid diagrams (strongest category). |
+| 9. Innovation & Problem Solving        |  1  | 0.5/1.0 | 5 regex strings presented as "Azure AI Cloud Security Scanner". |
+|----------------------------------------|-----|---------|-----------------------------|
+| ESTIMATED ACTUAL SCORE IF AUDITED      | 20  | 12.5-16 | Significant deduction risk on Security, Functionality & DevOps. |
+
+
+================================================================================
+7. PRIORITIZED ACTION & REMEDIATION CHECKLIST
+================================================================================
+
+[HIGH PRIORITY - IMMEDIATE FIXES]
+[ ] 1. Add `async/await` to `analyzeCode` and `getReviews` in backend/src/controllers/aiController.js
+       so the AI Security Scanner UI receives the JSON response.
+[ ] 2. Fix parameter order in `stateStore.addLog` calls in fileController.js and vaultController.js
+       so `sessionId` is passed into the correct 4th argument slot.
+[ ] 3. Fix `getWorkspaceById` in backend/src/services/stateStoreService.js to query Azure Table
+       Storage by `rowKey` instead of the hardcoded fallback array.
+[ ] 4. Commit untracked files (`vaultController.js`, `vaultRoutes.js`, `keyVaultService.js`)
+       to git so the remote repository is complete.
+
+[MEDIUM PRIORITY - SECURITY & RELIABILITY]
+[ ] 5. Protect `POST /api/vault/set` with an administrative secret key or header token so
+       public callers cannot tamper with server configuration.
+[ ] 6. Restrict CORS in backend/src/index.js to the trusted web app domain instead of wildcard `*`.
+[ ] 7. Change container creation in azureBlobService.js from `{ access: 'blob' }` to private,
+       or generate SAS tokens for secure download access.
+[ ] 8. Reframe documentation from "Azure AI Scanner" to "Cloud DevSecOps Static Rule Engine"
+       to maintain academic honesty and prevent rubric penalties.
+
+[LOW PRIORITY - DEVOPS & INFRASTRUCTURE]
+[ ] 9. Align deployment directory in .github/workflows/deploy-to-azure.yml (`deploy/frontend/dist`).
+[ ] 10. Upgrade App Service from F1 to B1 (Basic) or restart to clear the QuotaExceeded state.
+[ ] 11. Co-locate compute and storage resources within the same Azure region (e.g., eastus2).
+[ ] 12. Add at least basic unit tests using Jest/Supertest for health and API endpoints.
+
+================================================================================
+END OF AUDIT REPORT
+================================================================================

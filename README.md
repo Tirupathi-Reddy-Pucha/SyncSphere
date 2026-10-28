@@ -35,9 +35,11 @@ graph TB
     end
 
     subgraph Microservices_Layer["🛡️ Security & Microservices Layer"]
+        KeyVault["Azure Key Vault (kv-syncsphere-2026)<br/>HSM Secret Isolation & Managed Identity"]
         AIScanner["Azure AI Security Code Scanner"]
         StateStore["Workspace, Task & Audit State Store"]
         
+        Express --> KeyVault
         Express --> AIScanner
         Express --> StateStore
     end
@@ -58,6 +60,7 @@ graph TB
 | Resource Type | Name | Region | Description |
 | :--- | :--- | :--- | :--- |
 | **Resource Group** | `rg-syncsphere-eastus2` | `eastus2` | Core container for all SyncSphere resources. |
+| **Key Vault** | `kv-syncsphere-2026` | `eastus2` | FIPS 140-2 Level 2 HSM Zero-Trust secret isolation. |
 | **Storage Account** | `stsyncsphere2026` | `eastus2` | Standard_LRS Storage V2 with CORS and HTTPS enforcement. |
 | **Blob Container** | `workspace-assets` | `eastus2` | Container for streaming asset uploads/downloads. |
 | **Log Analytics** | `log-syncsphere` | `eastus2` | Centralized log ingestion workspace. |

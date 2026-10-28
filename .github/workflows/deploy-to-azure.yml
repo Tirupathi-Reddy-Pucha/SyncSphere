@@ -34,10 +34,14 @@ jobs:
         run: npm ci
         working-directory: ./backend
 
+      - name: 🧪 Run Automated Backend Test Suite
+        run: npm test
+        working-directory: ./backend
+
       - name: 📂 Prepare Deployment Structure
         run: |
-          mkdir -p deploy
-          cp -r frontend/dist deploy/frontend
+          mkdir -p deploy/frontend
+          cp -r frontend/dist deploy/frontend/dist
           cp -r backend/src deploy/src
           cp backend/package.json deploy/package.json
           cp backend/package-lock.json deploy/package-lock.json || true

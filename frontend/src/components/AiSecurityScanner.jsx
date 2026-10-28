@@ -3,6 +3,18 @@ import { ShieldCheck, Code, AlertTriangle, CheckCircle, Cpu, Zap, History } from
 
 const SAMPLE_TEMPLATES = [
     {
+        label: 'Azure Key Vault Secret Retrieval (Zero-Trust HSM)',
+        code: `const { SecretClient } = require('@azure/keyvault-secrets');
+const { DefaultAzureCredential } = require('@azure/identity');
+
+const vaultUrl = 'https://kv-syncsphere-2026.vault.azure.net';
+const client = new SecretClient(vaultUrl, new DefaultAzureCredential());
+
+// Retrieve connection string securely from Azure Key Vault HSM
+const secret = await client.getSecret('AZURE-STORAGE-CONNECTION-STRING');
+const connectionString = secret.value;`
+    },
+    {
         label: 'Azure Blob SDK Upload (Secure)',
         code: `const { BlobServiceClient } = require('@azure/storage-blob');
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
@@ -17,10 +29,12 @@ app.use(cors({ origin: '*' }));`
     }
 ];
 
-export default function AiSecurityScanner() {
+export default function AiSecurityScanner({ activeUser, clientSessionId, authToken }) {
     const [code, setCode] = useState(SAMPLE_TEMPLATES[0].code);
     const [scanning, setScanning] = useState(false);
     const [result, setResult] = useState(null);
+
+    const token = authToken || localStorage.getItem('syncsphere_auth_token') || '';
 
     const handleScan = async (e) => {
         e.preventDefault();
@@ -30,7 +44,10 @@ export default function AiSecurityScanner() {
             setScanning(true);
             const res = await fetch('/api/ai/analyze', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({ codeSnippet: code })
             });
             const json = await res.json();

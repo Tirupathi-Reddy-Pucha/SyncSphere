@@ -20,19 +20,26 @@ export default function App() {
         return sid;
     });
 
-    // Authenticated User Email State
+    // Authenticated User Email & JWT Token State
     const [userEmail, setUserEmailState] = useState(() => {
         return localStorage.getItem('syncsphere_user_email') || '';
     });
+    const [authToken, setAuthToken] = useState(() => {
+        return localStorage.getItem('syncsphere_auth_token') || '';
+    });
 
-    const handleLogin = (email) => {
+    const handleLogin = (email, token) => {
         localStorage.setItem('syncsphere_user_email', email);
+        if (token) localStorage.setItem('syncsphere_auth_token', token);
         setUserEmailState(email);
+        if (token) setAuthToken(token);
     };
 
     const handleLogout = () => {
         localStorage.removeItem('syncsphere_user_email');
+        localStorage.removeItem('syncsphere_auth_token');
         setUserEmailState('');
+        setAuthToken('');
     };
 
     useEffect(() => {
@@ -55,10 +62,10 @@ export default function App() {
 
             {/* Main Workspace Canvas */}
             <main style={{ flex: 1, maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '2rem 1.5rem' }}>
-                {activeTab === 'workspaces' && <WorkspaceList activeUser={userEmail} clientSessionId={clientSessionId} />}
-                {activeTab === 'files' && <FileManager activeUser={userEmail} clientSessionId={clientSessionId} />}
-                {activeTab === 'ai' && <AiSecurityScanner activeUser={userEmail} clientSessionId={clientSessionId} />}
-                {activeTab === 'telemetry' && <TelemetryDashboard clientSessionId={clientSessionId} userEmail={userEmail} />}
+                {activeTab === 'workspaces' && <WorkspaceList activeUser={userEmail} clientSessionId={clientSessionId} authToken={authToken} />}
+                {activeTab === 'files' && <FileManager activeUser={userEmail} clientSessionId={clientSessionId} authToken={authToken} />}
+                {activeTab === 'ai' && <AiSecurityScanner activeUser={userEmail} clientSessionId={clientSessionId} authToken={authToken} />}
+                {activeTab === 'telemetry' && <TelemetryDashboard clientSessionId={clientSessionId} userEmail={userEmail} authToken={authToken} />}
             </main>
 
             {/* Footer */}

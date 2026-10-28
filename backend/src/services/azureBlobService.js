@@ -1,6 +1,7 @@
 const { BlobServiceClient } = require('@azure/storage-blob');
 const path = require('path');
 const dotenv = require('dotenv');
+const keyVaultService = require('./keyVaultService');
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -16,11 +17,19 @@ const fallbackBlobs = [
         lastModified: new Date().toISOString()
     }
 ];
+const fallbackBuffers = new Map();
+
+function getFallbackBlob(blobName) {
+    return fallbackBuffers.get(blobName) || null;
+}
 
 function getBlobServiceClient() {
-    const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    let connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    if (!connectionString && keyVaultService.cache.has('AZURE-STORAGE-CONNECTION-STRING')) {
+        connectionString = keyVaultService.cache.get('AZURE-STORAGE-CONNECTION-STRING')?.value;
+    }
     if (!connectionString || connectionString.trim() === '') {
-        console.warn('⚠️ AZURE_STORAGE_CONNECTION_STRING is missing in environment.');
+        console.warn('⚠️ AZURE_STORAGE_CONNECTION_STRING is missing in Azure Key Vault & environment.');
         return null;
     }
     try {
@@ -41,7 +50,10 @@ async function uploadFileToBlob(fileBuffer, originalName, mimeType) {
         const blobServiceClient = getBlobServiceClient();
         if (blobServiceClient) {
             const containerClient = blobServiceClient.getContainerClient(containerName);
-            await containerClient.createIfNotExists({ access: 'blob' });
+            // Attempt standard private creation first; fallback to access configuration if permitted
+            await containerClient.createIfNotExists().catch(async () => {
+                await containerClient.createIfNotExists({ access: 'blob' }).catch(() => { });
+            });
 
             console.log(`Uploading file ${blobName} to Azure Blob Storage...`);
             const blockBlobClient = containerClient.getBlockBlobClient(blobName);
@@ -61,10 +73,12 @@ async function uploadFileToBlob(fileBuffer, originalName, mimeType) {
         console.warn('⚠️ Azure Storage SDK direct upload skipped due to network/DNS resolution:', azureErr.message);
     }
 
-    // Seamless Fallback Store
+    // Seamless Fallback Store - retaining buffer for local serving
+    fallbackBuffers.set(blobName, { buffer: fileBuffer, contentType: mimeType || 'application/octet-stream' });
+    const fallbackUrl = `/api/files/assets/${encodeURIComponent(blobName)}`;
     const fallbackBlob = {
         name: blobName,
-        url: `https://app-syncsphere-api-2026.azurewebsites.net/api/files/assets/${encodeURIComponent(blobName)}`,
+        url: fallbackUrl,
         size: fileBuffer.length,
         contentType: mimeType || 'application/octet-stream',
         lastModified: new Date().toISOString()
@@ -128,11 +142,13 @@ async function deleteBlob(blobName) {
     if (idx !== -1) {
         fallbackBlobs.splice(idx, 1);
     }
+    fallbackBuffers.delete(blobName);
     return true;
 }
 
 module.exports = {
     uploadFileToBlob,
     listWorkspaceBlobs,
-    deleteBlob
+    deleteBlob,
+    getFallbackBlob
 };

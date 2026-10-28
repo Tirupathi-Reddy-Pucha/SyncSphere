@@ -8,6 +8,8 @@ frontend/node_modules/
 backend/.env
 *.env.local
 *.env.production
+publish_profile.xml
+*.publishsettings
 
 # Build outputs
 frontend/dist/

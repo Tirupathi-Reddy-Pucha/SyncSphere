@@ -8,14 +8,39 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const workspaceRoutes = require('./routes/workspaceRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const vaultRoutes = require('./routes/vaultRoutes');
+const authRoutes = require('./routes/authRoutes');
+const keyVaultService = require('./services/keyVaultService');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// Security-hardened CORS policy with development flexibility
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:5000',
+    process.env.AZURE_WEB_APP_URL || 'https://app-syncsphere-api-2026.azurewebsites.net'
+];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Permit requests with no origin (mobile apps, curl, server-to-server) or in development
+        if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+            callback(null, true);
+        } else {
+            callback(new Error('Blocked by CORS policy: Origin not allowed for production API gateway'));
+        }
+    },
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Preload secrets from Azure Key Vault asynchronously on boot
+keyVaultService.preloadSecrets().catch((err) => {
+    console.warn('⚠️ Key Vault preload error:', err.message);
+});
 
 // Health Check Endpoint
 app.get('/health', (req, res) => {
@@ -24,24 +49,30 @@ app.get('/health', (req, res) => {
         service: 'SyncSphere Azure API Gateway',
         timestamp: new Date().toISOString(),
         azureRegion: 'eastus2',
-        cloudStorageContainer: process.env.AZURE_STORAGE_CONTAINER_NAME || 'workspace-assets'
+        cloudStorageContainer: process.env.AZURE_STORAGE_CONTAINER_NAME || 'workspace-assets',
+        keyVault: keyVaultService.getStatus()
     });
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/vault', vaultRoutes);
 
-// Serve compiled React Frontend SPA static assets
+// Serve compiled React Frontend SPA static assets with multi-path resolution
 const fs = require('fs');
-let distPath = path.join(__dirname, '../frontend/dist');
-if (!fs.existsSync(distPath)) {
-    distPath = path.join(__dirname, '../../frontend/dist');
-}
-if (!fs.existsSync(distPath)) {
-    distPath = path.join(process.cwd(), 'frontend/dist');
-}
+const potentialDistPaths = [
+    path.join(__dirname, '../frontend/dist'),
+    path.join(__dirname, '../../frontend/dist'),
+    path.join(process.cwd(), 'frontend/dist'),
+    path.join(process.cwd(), 'deploy/frontend'),
+    path.join(__dirname, '../frontend'),
+    path.join(process.cwd(), 'dist')
+];
+
+let distPath = potentialDistPaths.find(p => fs.existsSync(path.join(p, 'index.html'))) || potentialDistPaths[0];
 
 console.log('Serving Static Frontend SPA from:', distPath);
 app.use(express.static(distPath));
