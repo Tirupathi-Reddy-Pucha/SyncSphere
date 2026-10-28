@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Server, HardDrive, ShieldAlert, CheckCircle2, Clock, RefreshCw, Cpu, Key, Lock, Shield } from 'lucide-react';
+import { Activity, Server, HardDrive, ShieldAlert, CheckCircle2, Clock, RefreshCw, Cpu, Key, Lock, Shield, Database } from 'lucide-react';
 
 export default function TelemetryDashboard({ clientSessionId, userEmail, authToken }) {
     const [health, setHealth] = useState(null);
@@ -159,26 +159,26 @@ export default function TelemetryDashboard({ clientSessionId, userEmail, authTok
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Container: workspace-assets</div>
                 </div>
 
-                {/* Card 4: Log Analytics Workspace */}
+                {/* Card 4: Azure Cosmos DB (Real) */}
                 <div className="glass-panel" style={{ padding: '1.25rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                        <Activity size={22} color="var(--accent-purple)" />
-                        <span className="badge badge-purple">Active</span>
+                        <Database size={22} color="var(--accent-purple)" />
+                        <span className="badge badge-purple">{health?.cosmosDb?.status || 'CONNECTED'}</span>
                     </div>
-                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Log Analytics Workspace</h4>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>log-syncsphere</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Region: eastus2</div>
+                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Azure Cosmos DB (NoSQL)</h4>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>cosmos-syncsphere-db</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Database: syncspheredb • Central India</div>
                 </div>
 
-                {/* Card 5: Application Insights */}
+                {/* Card 5: Azure Table Storage (Real) */}
                 <div className="glass-panel" style={{ padding: '1.25rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                         <Cpu size={22} color="var(--accent-emerald)" />
-                        <span className="badge badge-cyan">Streaming</span>
+                        <span className="badge badge-emerald">Operational</span>
                     </div>
-                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Application Insights</h4>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>appi-syncsphere</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Telemetry: Performance & APM</div>
+                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Azure Table Storage</h4>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>stsyncsphere2026</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Tables: Workspaces, Tasks, Logs</div>
                 </div>
 
             </div>

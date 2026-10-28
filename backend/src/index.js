@@ -11,6 +11,7 @@ const aiRoutes = require('./routes/aiRoutes');
 const vaultRoutes = require('./routes/vaultRoutes');
 const authRoutes = require('./routes/authRoutes');
 const keyVaultService = require('./services/keyVaultService');
+const cosmosDbService = require('./services/cosmosDbService');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,16 +43,27 @@ keyVaultService.preloadSecrets().catch((err) => {
     console.warn('⚠️ Key Vault preload error:', err.message);
 });
 
+// Initialize Azure Cosmos DB connection on boot
+cosmosDbService.init().catch((err) => {
+    console.warn('⚠️ Cosmos DB boot initialization error:', err.message);
+});
+
 // Health Check Endpoint
 app.get('/health', (req, res) => {
     res.json({
         status: 'HEALTHY',
         service: 'SyncSphere Azure API Gateway',
         timestamp: new Date().toISOString(),
-        azureRegion: 'eastus2',
+        azureRegion: 'eastasia',
         cloudStorageContainer: process.env.AZURE_STORAGE_CONTAINER_NAME || 'workspace-assets',
-        keyVault: keyVaultService.getStatus()
+        keyVault: keyVaultService.getStatus(),
+        cosmosDb: cosmosDbService.getStatus()
     });
+});
+
+// Dedicated Cosmos DB Status Endpoint
+app.get('/api/cosmos/status', (req, res) => {
+    res.json({ success: true, data: cosmosDbService.getStatus() });
 });
 
 // API Routes

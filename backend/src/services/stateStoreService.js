@@ -7,6 +7,7 @@ const { TableServiceClient, TableClient, odata } = require('@azure/data-tables')
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const keyVaultService = require('./keyVaultService');
+const cosmosDbService = require('./cosmosDbService');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 function getConnectionString() {
@@ -134,6 +135,11 @@ async function ensureTablesExist() {
 
 // ─── Workspace Methods ───────────────────────────────────────────────────────
 async function getWorkspaces() {
+    try {
+        const cosmosRes = await cosmosDbService.getWorkspaces();
+        if (cosmosRes && cosmosRes.length > 0) return cosmosRes;
+    } catch (_) { }
+
     await ensureTablesExist();
     const client = getTableClient(TABLES.WORKSPACES);
     if (!client) return fallbackState.workspaces;
@@ -173,17 +179,27 @@ async function createWorkspace(data) {
         author,
         createdAt: new Date().toISOString()
     };
+    const members = defaultWorkspaceMembers(author);
+    const newWs = { id, ...entity, members };
+
+    // Persist to Azure Cosmos DB
+    cosmosDbService.createWorkspace(newWs).catch(() => { });
+
+    // Persist to Azure Table Storage
     const client = getTableClient(TABLES.WORKSPACES);
     if (client) await client.createEntity(entity).catch(err => console.warn(err.message));
     await addLog(author, `Created workspace: "${entity.title}"`, 'Info');
-    const members = defaultWorkspaceMembers(author);
-    const newWs = { id, ...entity, members };
     fallbackState.workspaces.unshift(newWs);
     return newWs;
 }
 
 // ─── Task Methods ────────────────────────────────────────────────────────────
 async function getTasks(workspaceId) {
+    try {
+        const cosmosTasks = await cosmosDbService.getTasks(workspaceId);
+        if (cosmosTasks && cosmosTasks.length > 0) return cosmosTasks;
+    } catch (_) { }
+
     await ensureTablesExist();
     const client = getTableClient(TABLES.TASKS);
     if (!client) return fallbackState.tasks.filter(t => !workspaceId || t.workspaceId === workspaceId);
@@ -222,12 +238,20 @@ async function createTask(taskData) {
         status: taskData.status || 'Pending',
         assignee: taskData.assignee || 'Unassigned'
     };
+
+    // Persist to Cosmos DB
+    cosmosDbService.createTask({ id, ...entity }).catch(() => { });
+
+    // Persist to Table Storage
     const client = getTableClient(TABLES.TASKS);
     if (client) await client.createEntity(entity).catch(err => console.warn(err.message));
     return { id, ...entity };
 }
 
 async function updateTaskStatus(taskId, status, updatedBy, deviceTag = '', sessionId = '') {
+    // Update in Cosmos DB
+    cosmosDbService.updateTaskStatus(taskId, status).catch(() => { });
+
     await ensureTablesExist();
     const client = getTableClient(TABLES.TASKS);
     if (client) {
@@ -385,6 +409,11 @@ const fallbackState = {
 
 // Azure Table Storage-backed workspace lookup with in-memory fallback
 async function getWorkspaceById(id) {
+    try {
+        const cosmosWs = await cosmosDbService.getWorkspaceById(id);
+        if (cosmosWs) return cosmosWs;
+    } catch (_) { }
+
     await ensureTablesExist();
     const client = getTableClient(TABLES.WORKSPACES);
     if (client) {

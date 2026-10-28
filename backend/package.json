@@ -9,6 +9,7 @@
         "test": "node --test test/*.test.js"
     },
     "dependencies": {
+        "@azure/cosmos": "^4.10.1",
         "@azure/data-tables": "^13.3.2",
         "@azure/identity": "^4.13.3",
         "@azure/keyvault-secrets": "^4.11.2",
