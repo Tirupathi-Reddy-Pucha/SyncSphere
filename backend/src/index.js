@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+const appInsightsService = require('./services/appInsightsService');
 const workspaceRoutes = require('./routes/workspaceRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const aiRoutes = require('./routes/aiRoutes');
@@ -57,13 +58,19 @@ app.get('/health', (req, res) => {
         azureRegion: 'eastasia',
         cloudStorageContainer: process.env.AZURE_STORAGE_CONTAINER_NAME || 'workspace-assets',
         keyVault: keyVaultService.getStatus(),
-        cosmosDb: cosmosDbService.getStatus()
+        cosmosDb: cosmosDbService.getStatus(),
+        appInsights: appInsightsService.getStatus()
     });
 });
 
 // Dedicated Cosmos DB Status Endpoint
 app.get('/api/cosmos/status', (req, res) => {
     res.json({ success: true, data: cosmosDbService.getStatus() });
+});
+
+// Dedicated Application Insights & Log Analytics Status Endpoint
+app.get('/api/insights/status', (req, res) => {
+    res.json({ success: true, data: appInsightsService.getStatus() });
 });
 
 // API Routes

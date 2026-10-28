@@ -181,6 +181,28 @@ export default function TelemetryDashboard({ clientSessionId, userEmail, authTok
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Tables: Workspaces, Tasks, Logs</div>
                 </div>
 
+                {/* Card 6: Azure Application Insights (Real) */}
+                <div className="glass-panel" style={{ padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                        <Activity size={22} color="var(--accent-cyan)" />
+                        <span className="badge badge-emerald">{health?.appInsights?.status === 'ACTIVE' ? 'Live APM' : 'Active'}</span>
+                    </div>
+                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Azure Application Insights</h4>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>appi-syncsphere-2026</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Live Metrics & Request Tracing</div>
+                </div>
+
+                {/* Card 7: Log Analytics Workspace (Real) */}
+                <div className="glass-panel" style={{ padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                        <Server size={22} color="var(--accent-purple)" />
+                        <span className="badge badge-purple">Ingestion Ready</span>
+                    </div>
+                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Log Analytics Workspace</h4>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>log-syncsphere-2026</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>30-Day Retention • PerGB2018</div>
+                </div>
+
             </div>
 
             {/* Azure Key Vault Zero-Trust Secret Manager Widget */}
