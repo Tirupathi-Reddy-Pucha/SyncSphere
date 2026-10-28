@@ -193,16 +193,9 @@ export default function WorkspaceList({ activeUser, clientSessionId, authToken }
                                     </p>
 
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '-0.3rem' }}>
-                                            {ws.members.map((m, idx) => (
-                                                <img
-                                                    key={idx}
-                                                    src={m.avatar}
-                                                    alt={m.name}
-                                                    style={{ width: '26px', height: '26px', borderRadius: '50%', border: '2px solid var(--bg-dark)', objectFit: 'cover' }}
-                                                    title={`${m.name} (${m.role})`}
-                                                />
-                                            ))}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--text-dim)' }}>
+                                            <Users size={14} color="var(--accent-cyan)" />
+                                            <span>Lead: <strong style={{ color: 'var(--text-main)', fontWeight: 600 }}>{ws.author || 'Tirupathi Reddy'}</strong></span>
                                         </div>
                                         <span style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', fontWeight: 600 }}>
                                             {isSelected ? 'Active Selection ✓' : 'Click to View Tasks'}

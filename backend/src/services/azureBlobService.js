@@ -8,15 +8,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'workspace-assets';
 
 // In-Memory Fallback Blob Store (Guarantees zero-downtime if Azure DNS/Storage is unreachable)
-const fallbackBlobs = [
-    {
-        name: 'sample_cloud_architecture.png',
-        url: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800',
-        size: 245800,
-        contentType: 'image/png',
-        lastModified: new Date().toISOString()
-    }
-];
+const fallbackBlobs = [];
 const fallbackBuffers = new Map();
 
 function getFallbackBlob(blobName) {

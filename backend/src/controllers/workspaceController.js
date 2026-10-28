@@ -37,7 +37,7 @@ exports.createWorkspace = async (req, res) => {
             category,
             author: author || 'Tirupathi Reddy',
             members: [
-                { id: 'usr-1', name: author || 'Tirupathi Reddy', role: 'Project Owner', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }
+                { id: 'usr-1', name: author || 'Tirupathi Reddy', role: 'Project Owner' }
             ]
         });
         res.status(201).json({ success: true, data: newWorkspace });

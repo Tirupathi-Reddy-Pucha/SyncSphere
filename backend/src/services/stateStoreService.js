@@ -74,9 +74,9 @@ const tableClients = new Map();
 
 function defaultWorkspaceMembers(author = 'Tirupathi Reddy') {
     return [
-        { id: 'usr-1', name: author, role: 'Lead Architect', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' },
-        { id: 'usr-2', name: 'Cloud SecOps Lead', role: 'Security Reviewer', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100' },
-        { id: 'usr-3', name: 'Azure DevOps Specialist', role: 'CI/CD Engineer', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100' }
+        { id: 'usr-1', name: author, role: 'Lead Architect' },
+        { id: 'usr-2', name: 'Cloud SecOps Lead', role: 'Security Reviewer' },
+        { id: 'usr-3', name: 'Azure DevOps Specialist', role: 'CI/CD Engineer' }
     ];
 }
 
